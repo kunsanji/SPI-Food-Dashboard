@@ -55,7 +55,11 @@ jobs:
             echo "No data changes."
           else
             git commit -m "Data update $(date -u +%Y-%m-%dT%H:%MZ)"
-            git push
+            # someone may have edited the site while this ran; data/ is only written here
+            for i in 1 2 3; do
+              git pull --rebase -X theirs origin main && git push && break
+              sleep 10
+            done
           fi
 
       - name: Package site
