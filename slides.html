@@ -1,0 +1,58 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Slides: food safety from real inspection reports</title>
+<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono&family=Public+Sans:wght@400;600;700;800&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="assets/style.css">
+<style>
+  body { background: var(--ink); color: #fff; overflow: hidden; }
+  .deck section { position: fixed; inset: 0; padding: 6vh 8vw; display: none; flex-direction: column; justify-content: center; background: var(--paper); color: var(--ink); }
+  .deck section.on { display: flex; }
+  .deck h1 { font-size: clamp(2rem, 5vw, 3.6rem); max-width: 22ch; }
+  .deck h2 { font-size: clamp(1.6rem, 3.6vw, 2.6rem); margin-top: 0; }
+  .deck p, .deck li { font-size: clamp(1.05rem, 2vw, 1.5rem); max-width: 50ch; }
+  .deck .bignum { font-size: clamp(2.4rem, 6vw, 4.5rem); }
+  .ctrl { position: fixed; right: 1rem; bottom: 1rem; display: flex; gap: .5rem; align-items: center; z-index: 5; color: var(--ink); }
+  .ctrl span { font-variant-numeric: tabular-nums; }
+  .src { font-size: .95rem !important; color: var(--ink-2); }
+</style>
+</head>
+<body>
+<main class="deck" id="deck" aria-live="polite">
+  <section><h1>Every restaurant inspection in Sangamon County is public</h1><p>Food safety from real, current inspection reports.</p><p class="src">Springfield Food Inspections</p></section>
+  <section><h2>Did you know you could read these?</h2><p>Every inspection since 2010 is on the county portal. Most people have never seen one.</p><p id="sTotal" class="src"></p></section>
+  <section><h2>Why it matters</h2><div class="nums3"><div><span class="bignum">48M</span>sick each year</div><div><span class="bignum">128K</span>hospitalized</div><div><span class="bignum">3,000</span>deaths</div></div><p class="src">CDC estimates of foodborne illness in the US each year.</p></section>
+  <section><h2>The five CDC risk factors, in Springfield this year</h2><ul id="sFactors"></ul><p class="src" id="sFactorsSrc"></p></section>
+  <section><h2>How a report is built</h2><ul><li>Items 1 to 29: risk factors and public health interventions</li><li>Items 30 to 56: good retail practices (upkeep)</li><li>Items 57 and 58: Illinois training rules</li><li>Each finding cites a 2022 FDA Food Code rule</li><li>No grade, no pass or fail: one visit, one day</li></ul></section>
+  <section><h2>Decode this finding</h2><p class="verbatim" id="sSaid" style="color:var(--ink)"></p><p><mark id="sMeans"></mark></p></section>
+  <section><h2>What the data can't tell you</h2><ul><li>What happened on the other 364 days</li><li>Whether a problem was fixed on the spot</li><li>Illness that was never reported</li><li>How places compare when they are inspected at different rates</li></ul></section>
+  <section><h2>The law in Illinois</h2><ul><li>Food handlers: approved training within 30 days of hire</li><li>Restaurant food handlers: retrain every 3 years</li><li>At least one approved option for $15 or less</li><li>A certified food protection manager in charge</li></ul><p class="src">410 ILCS 625/3.05 and 3.06. IDPH Food Handler FAQ.</p></section>
+</main>
+<div class="ctrl"><button type="button" id="prev" aria-label="Previous slide">Back</button><span id="pos"></span><button type="button" id="next" aria-label="Next slide">Next</button></div>
+<script src="assets/items.js"></script>
+<script src="assets/app.js"></script>
+<script>
+(async function () {
+  const S = window.SFI, slides = [...document.querySelectorAll(".deck section")];
+  let i = Math.max(0, Math.min(slides.length - 1, (+location.hash.slice(1) || 1) - 1));
+  function go(n) { i = Math.max(0, Math.min(slides.length - 1, n)); slides.forEach((s, j) => s.classList.toggle("on", j === i)); document.getElementById("pos").textContent = `${i + 1} / ${slides.length}`; history.replaceState(null, "", "#" + (i + 1)); }
+  document.getElementById("prev").onclick = () => go(i - 1);
+  document.getElementById("next").onclick = () => go(i + 1);
+  document.addEventListener("keydown", (e) => { if (["ArrowRight", "PageDown", " "].includes(e.key)) { e.preventDefault(); go(i + 1); } if (["ArrowLeft", "PageUp"].includes(e.key)) go(i - 1); });
+  go(i);
+  try {
+    const m = await S.getJSON("data/meta.json", true);
+    document.getElementById("sTotal").textContent = `${m.total_inspections.toLocaleString()} inspections on file as of ${S.date(m.newest_inspection_date)}.`;
+    const st = await S.getJSON("data/site/stats.json");
+    document.getElementById("sFactors").innerHTML = CDC_FACTORS.map((f) => `<li>${f.name}: ${f.items.reduce((a, n) => a + (st.findings_by_item[n] || 0), 0).toLocaleString()} findings</li>`).join("");
+    document.getElementById("sFactorsSrc").textContent = `${st.inspections.toLocaleString()} inspections, ${S.date(st.from)} to ${S.date(st.to)}.`;
+    const ex = await S.getJSON("data/site/examples.json"); const e = ex["4"] || Object.values(ex)[0];
+    if (e) { document.getElementById("sSaid").textContent = `Item ${e.item}. ${e.comment}`; document.getElementById("sMeans").textContent = itemInfo(e.item).plain; }
+  } catch (err) {}
+})();
+</script>
+</body>
+</html>

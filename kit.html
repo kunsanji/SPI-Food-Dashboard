@@ -1,0 +1,77 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Classroom kit | Springfield Food Inspections</title>
+<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono&family=Public+Sans:wght@400;600;700;800&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="assets/style.css">
+<style>@media print { .plan { display: none; } .worksheet { font-size: 11pt; } .line { border-bottom: 1px solid #000; height: 1.6em; } }
+.line { border-bottom: 1px solid var(--rule); height: 1.8em; }</style>
+</head>
+<body>
+<main id="main" class="wrap">
+  <section class="hero no-print">
+    <h1>Classroom kit</h1>
+    <p class="lede">A 50 minute session for an environmental health course, built on live Sangamon County data. Everything here updates on its own: the worksheet and slides use this week's report.</p>
+    <p class="tools"><a class="btn primary" href="slides.html">Open the slides</a> <button type="button" onclick="window.print()">Print the worksheet</button></p>
+  </section>
+
+  <section class="plan">
+    <h2>Instructor plan</h2>
+    <p><b>Learning objectives.</b> By the end, students can (1) name the five CDC foodborne illness risk factors and link each to items on the Illinois inspection report, (2) tell risk factor findings from good retail practice findings in a real report, and (3) explain two limits of inspection data as a surveillance source.</p>
+    <div class="tablewrap"><table>
+      <thead><tr><th scope="col">Time</th><th scope="col">Activity</th><th scope="col">Materials</th></tr></thead>
+      <tbody>
+        <tr><td>0 to 5 min</td><td>Opener: ask how many students knew restaurant inspection reports are public. Show the home page and look up a place students know.</td><td>Slides 1 to 2, the site</td></tr>
+        <tr><td>5 to 15 min</td><td>Burden and the five risk factors. Walk through the CDC estimates, then the five risk factors with this year's Springfield counts.</td><td>Slides 3 to 4, Learn page</td></tr>
+        <tr><td>15 to 25 min</td><td>How the report is built: items 1 to 29 vs 30 to 56, Priority / Priority Foundation / Core, repeat violations, visit types. Decode one finding together.</td><td>Slide 5, any place page</td></tr>
+        <tr><td>25 to 40 min</td><td>Worksheet in pairs: sort this week's practice report, then each pair looks up one place and decodes its latest report.</td><td>Worksheet below, phones or laptops</td></tr>
+        <tr><td>40 to 50 min</td><td>Discussion: what can and can't inspection data tell us? How would you design a fair public display? Close with the Illinois training requirements.</td><td>Slides 6 to 8</td></tr>
+      </tbody>
+    </table></div>
+    <h3>Discussion prompts</h3>
+    <ul>
+      <li>A place has 8 upkeep findings and 0 risk factor findings. Another has 1 repeat risk factor finding. Which would worry you more, and why?</li>
+      <li>Why might a busy restaurant inspected four times a year show more findings than a convenience store inspected once?</li>
+      <li>Many jurisdictions post letter grades. Sangamon County does not. What are the trade-offs for the public, for businesses and for inspectors?</li>
+      <li>CDC estimates most foodborne illness is never linked to a specific cause. How should that shape how much weight we put on inspection findings?</li>
+    </ul>
+    <h3>Answer notes</h3>
+    <p>Risk factor items (1 to 29) are those most linked to outbreaks; a repeat risk factor finding suggests a control that is not working over time. Inspection frequency, menu complexity and inspector judgment all affect counts, so raw comparisons across places mislead. Grades are easy to read but compress a snapshot into a label that can outlive the conditions it describes.</p>
+  </section>
+
+  <section class="worksheet">
+    <h2>Worksheet: decode a real inspection</h2>
+    <p>Name: <span class="line" style="display:inline-block;width:14rem"></span></p>
+    <h3>Part 1. Sort the findings</h3>
+    <p>This is a real inspection of a <span id="wsType">food business</span> on <span id="wsDate">a recent date</span>. For each finding, circle R if it could directly make someone sick (risk factor) or U if it is upkeep or good practice. Then name the CDC risk factor, if any.</p>
+    <ol id="wsList"><li class="muted">Loading this week's report…</li></ol>
+    <h3>Part 2. Look one up</h3>
+    <p>On the site, find a food business you have eaten at. Write its latest visit date, the label, and one finding in your own words.</p>
+    <div class="line"></div><div class="line"></div><div class="line"></div>
+    <h3>Part 3. Think about the data</h3>
+    <p>Give one reason an inspection with zero findings does not prove a kitchen is safe.</p>
+    <div class="line"></div><div class="line"></div>
+    <p class="muted" id="wsKey"></p>
+  </section>
+</main>
+<script src="assets/items.js"></script>
+<script src="assets/app.js"></script>
+<script>
+(async function () {
+  const S = window.SFI;
+  await S.page("");
+  let p = null;
+  try { p = await S.getJSON("data/site/practice.json", true); } catch (e) {}
+  const list = document.getElementById("wsList");
+  if (!p || !p.findings) { list.innerHTML = "<li>This week's report is not available. Use any report from the site.</li>"; return; }
+  document.getElementById("wsType").textContent = (p.est_type || "food business").toLowerCase();
+  document.getElementById("wsDate").textContent = S.date(p.date);
+  list.innerHTML = p.findings.map((f) => `<li><p class="verbatim">${S.esc(f.comment)}</p><p>R &nbsp; U &nbsp;&nbsp; Risk factor: <span class="line" style="display:inline-block;width:12rem"></span></p></li>`).join("");
+  document.getElementById("wsKey").textContent = "Answer key for instructors: " + p.findings.map((f, i) => `${i + 1}: item ${f.item}, ${f.item <= 29 ? "R" : "U"}`).join("; ") + ".";
+})();
+</script>
+</body>
+</html>

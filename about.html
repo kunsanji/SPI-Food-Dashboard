@@ -1,0 +1,68 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>About the data | Springfield Food Inspections</title>
+<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono&family=Public+Sans:wght@400;600;700;800&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="assets/style.css">
+</head>
+<body>
+<main id="main" class="wrap">
+  <section class="hero">
+    <h1>About the data</h1>
+    <p class="lede">Where these reports come from, how often they update, and what they can and can't tell you.</p>
+  </section>
+
+  <h2>Where it comes from</h2>
+  <p>The Sangamon County Department of Public Health (SCDPH) inspects restaurants, stores, schools, day cares and other food businesses in the county. It publishes every inspection on its <a href="https://public.cdpehs.com/ILEnvPbl/ESTABLISHMENT/ShowESTABLISHMENTTablePage.aspx?ESTTST_CTY=sJRNEgWYzzs%3d">public inspection portal</a>, run by Custom Data Processing. That portal is the official record. This site copies the same records and adds plain-language explanations; it does not change or add findings.</p>
+
+  <h2 id="refresh">How it stays up to date</h2>
+  <ul>
+    <li>Every night a small program visits the county portal, one page at a time, and copies inspections from the last 14 days (to catch reports entered late) plus anything new.</li>
+    <li>It saves them as data files that this site reads. You can download them: <a href="data/inspections.csv">inspections (CSV)</a>, <a href="data/violations.csv">findings (CSV)</a>, <a href="data/meta.json">update log (JSON)</a>.</li>
+    <li><b>Refresh now</b> reloads those files in your browser. It is free and does not contact the county.</li>
+    <li>If the last update is more than a day old, <b>Run update now</b> opens the update job on GitHub, where the site's maintainers can start it by hand. The page then checks every 30 seconds and reloads when new data arrives.</li>
+  </ul>
+  <div id="runlog" class="note"><p>Loading the update log…</p></div>
+
+  <h2>What the labels mean</h2>
+  <p><span class="label attn">Needs attention</span> 3 or more risk factor findings, or any repeat violation, on that visit.</p>
+  <p><span class="label minor">Minor issues</span> At least one finding, but fewer than 3 risk factor findings and no repeats.</p>
+  <p><span class="label none">No issues written up</span> The inspector recorded no findings.</p>
+  <p>These labels were made for this site to help people scan the list. They are not county ratings. Visit types are shortened too: "Original" on the county report is shown as Routine, and "1st Re-Inspect" through "6th Re-Inspect" as Follow-up.</p>
+
+  <h2>Limits</h2>
+  <ul>
+    <li><b>No scores.</b> Sangamon County does not grade or pass/fail food businesses, and neither does this site. There are no rankings here.</li>
+    <li><b>One visit is a snapshot.</b> It shows what one inspector saw on one day. Many problems are corrected during the visit or soon after.</li>
+    <li><b>Counts are not comparable across types of place.</b> Places with more complex food handling are inspected more often and have more items that can be checked.</li>
+    <li><b>The plain-language lines are general.</b> They explain what each form item covers, written by hand for this site. The inspector's own note, shown under each finding, says what was actually seen.</li>
+    <li><b>Inspector names</b> appear on the county portal but are not shown here.</li>
+    <li><b>Errors.</b> If something here does not match the county portal, the portal is right. Please tell us.</li>
+  </ul>
+
+  <h2>Report a problem with a food business</h2>
+  <p>Contact SCDPH at (217) 535-3145 or through the <a href="https://sangamonil.gov/departments/m-r/public-health/food-service">SCDPH food services page</a>, which has a complaint form.</p>
+</main>
+<script src="assets/items.js"></script>
+<script src="assets/app.js"></script>
+<script>
+(async function () {
+  const S = window.SFI;
+  async function log() {
+    const m = S.meta, el = document.getElementById("runlog");
+    if (!m) { el.innerHTML = "<p>The update log is not available.</p>"; return; }
+    el.innerHTML = `<p><b>Last update:</b> ${S.dateTime(m.last_run)}, status "${S.esc(m.last_run_status)}". ${(m.last_run_added || 0)} new and ${(m.last_run_updated || 0)} changed inspections.
+      On file: ${(m.total_inspections || 0).toLocaleString()} inspections of ${(m.total_establishments || 0).toLocaleString()} places, from ${S.date(m.oldest_inspection_date)} to ${S.date(m.newest_inspection_date)}.
+      ${m.backfill_complete ? "" : "Older history is still being copied and will fill in over the next few nights."}
+      ${m.errors && m.errors.length ? `<br><span class="err">Last run notes: ${m.errors.map(S.esc).join("; ")}</span>` : ""}</p>`;
+  }
+  await S.page("about.html");
+  log();
+  document.addEventListener("sfi:refresh", log);
+})();
+</script>
+</body>
+</html>

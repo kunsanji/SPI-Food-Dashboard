@@ -1,0 +1,131 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Inspection report | Springfield Food Inspections</title>
+<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono&family=Public+Sans:wght@400;600;700;800&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="assets/style.css">
+</head>
+<body>
+<main id="main" class="wrap">
+  <div class="place-head">
+    <p class="no-print"><a href="index.html">Back to search</a></p>
+    <h1 id="name">Loading…</h1>
+    <p class="addr" id="addr"></p>
+  </div>
+  <div id="content"></div>
+</main>
+<script src="assets/items.js"></script>
+<script src="assets/app.js"></script>
+<script>
+(async function () {
+  const S = window.SFI;
+  await S.page("");
+  const params = new URLSearchParams(location.search);
+  const estNo = params.get("id");
+  const $ = (id) => document.getElementById(id);
+  let est = null, current = null;
+
+  function visitSentence(v, withName) {
+    if (v.risk === null) return `On ${S.date(v.date)}, an inspector made a ${v.visit.toLowerCase()} visit. Finding counts are not available for this visit.`;
+    const total = v.risk + v.grp;
+    const who = withName ? est.name : "this place";
+    if (total === 0) return `On ${S.date(v.date)}, an inspector made a ${v.visit.toLowerCase()} visit to ${who} and wrote up no findings.`;
+    let s = `On ${S.date(v.date)}, an inspector made a ${v.visit.toLowerCase()} visit to ${who} and wrote up ${S.plural(v.risk, "risk factor finding")} and ${S.plural(v.grp, "upkeep finding")}`;
+    s += v.repeat ? `. The report counts ${S.plural(v.repeat, "repeat violation")} (a problem also found at an earlier visit).` : ".";
+    return s;
+  }
+
+  function findingHTML(f) {
+    const it = itemInfo(f.item, f.title);
+    const isRisk = it.kind === "risk";
+    const rep = f.repeat || f.mentions_repeat;
+    return `<article class="finding ${it.kind}" aria-label="Item ${S.esc(f.item)}: ${S.esc(it.short)}">
+      <div class="num" aria-hidden="true">${S.esc(f.item ?? "?")}</div>
+      <div class="body">
+        <div class="chips">
+          <span class="chip ${it.kind}">${isRisk ? "Risk factor" : (it.tag || "Upkeep")}</span>
+          ${rep ? `<span class="chip rep">Repeat${f.repeat ? "" : " (noted by inspector)"}</span>` : ""}
+          <span class="muted" style="font-size:.85rem">Item ${S.esc(f.item)}: ${S.esc(it.short)}</span>
+        </div>
+        <p class="plain"><mark>${S.esc(it.plain)}</mark></p>
+        ${it.why ? `<p class="why"><b>Why it matters:</b> ${S.esc(it.why)}</p>` : ""}
+        ${f.comment ? `<details><summary>What the inspector wrote</summary><div class="verbatim">${S.esc(f.comment)}</div></details>` : ""}
+        ${f.citation ? `<details><summary>Food Code rule ${S.esc(f.citation)}</summary><p class="cite">${S.esc(f.citation_text)}</p></details>` : ""}
+      </div>
+    </article>`;
+  }
+
+  function showVisit(id, push) {
+    const v = est.visits.find((x) => x.id === id) || est.visits[0];
+    current = v;
+    document.querySelectorAll(".timeline button").forEach((b) => b.setAttribute("aria-pressed", b.dataset.id === v.id ? "true" : "false"));
+    const fs = [...v.findings].sort((a, b) => (a.item ?? 99) - (b.item ?? 99));
+    const risk = fs.filter((f) => (f.item ?? 99) <= 29), up = fs.filter((f) => (f.item ?? 99) > 29);
+    let body;
+    if (!v.fetched) body = `<p class="muted">The detailed findings for this visit have not been copied yet. <a href="${S.esc(v.detail_url)}">Open the official report</a>.</p>`;
+    else if (!fs.length && (v.risk || v.grp)) body = `<p class="muted">The detailed findings are not available. <a href="${S.esc(v.detail_url)}">Open the official report</a>.</p>`;
+    else if (!fs.length) body = `<p>The inspector wrote up no findings on this visit.</p>`;
+    else body = (risk.length ? `<h3>Risk factor findings (${risk.length})</h3><p class="muted">The kinds of problems that can directly make people sick.</p>${risk.map(findingHTML).join("")}` : "")
+      + (up.length ? `<h3>Upkeep findings (${up.length})</h3><p class="muted">Cleaning, repairs, good practice and required training.</p>${up.map(findingHTML).join("")}` : "");
+    $("visit").innerHTML = `
+      <h2 id="visitTitle" tabindex="-1">${S.date(v.date)}: ${S.esc(v.visit)} visit ${S.labelHTML(v.label)}</h2>
+      <p>${S.esc(visitSentence(v))}</p>
+      ${v.visit !== v.type_raw ? `<p class="muted">On the county report this visit type is "${S.esc(v.type_raw)}".</p>` : ""}
+      ${body}
+      <p><a href="${S.esc(v.detail_url)}">Open the official county report for this visit</a></p>`;
+    if (push) history.replaceState(null, "", S.placeHref(est.est_no, v.id));
+  }
+
+  function summaryText() {
+    const v = current;
+    const lines = [`${est.name}, ${est.address}, ${est.city} ${est.zip}`, visitSentence(v, true), `Label: ${v.label}`];
+    for (const f of [...v.findings].sort((a, b) => a.item - b.item)) {
+      const it = itemInfo(f.item, f.title);
+      lines.push(`- Item ${f.item} (${it.kind === "risk" ? "risk factor" : "upkeep"}${f.repeat ? ", repeat" : ""}): ${it.plain}`);
+    }
+    lines.push("One inspection is a snapshot of one day; problems may have been fixed since.", `Official report: ${v.detail_url}`, `Plain-language version: ${location.href}`);
+    return lines.join("\n");
+  }
+
+  async function load(fresh) {
+    if (!estNo) { $("name").textContent = "No place selected"; $("content").innerHTML = `<p><a href="index.html">Search for a place</a>.</p>`; return; }
+    try { est = await S.getJSON(`data/site/est/${S.slug(estNo)}.json`, fresh); }
+    catch (e) { $("name").textContent = "Place not found"; $("content").innerHTML = `<p>We could not find establishment ${S.esc(estNo)}. <a href="index.html">Search again</a>.</p>`; return; }
+    document.title = `${est.name}: inspection reports | Springfield Food Inspections`;
+    $("name").textContent = est.name;
+    $("addr").textContent = `${est.est_type}, ${est.address}, ${est.city}, ${est.state} ${est.zip}. County establishment number ${est.est_no}.`;
+    const latest = est.visits[0];
+    const complaint = (S.meta && S.meta.complaint_url) || "https://sangamonil.gov/departments/m-r/public-health/food-service";
+    $("content").innerHTML = `
+      <section class="summary" aria-labelledby="latestTitle">
+        <h2 id="latestTitle" style="margin-top:0">Latest visit ${S.labelHTML(latest.label)}</h2>
+        <p>${S.esc(visitSentence(latest))}</p>
+        <p class="muted">This is a snapshot of one day. Problems found may have been fixed since${S.daysAgo(latest.date) > 30 ? `, and this visit was ${S.daysAgo(latest.date)} days ago` : ""}.</p>
+      </section>
+      <div class="tools no-print">
+        <button type="button" id="copy">Copy summary</button>
+        <button type="button" onclick="window.print()">Print</button>
+        <a class="btn" href="${S.esc(complaint)}">Report a concern to SCDPH</a>
+        <span aria-live="polite" id="copyMsg" class="muted"></span>
+      </div>
+      <h2>All visits</h2>
+      <p class="muted">${S.plural(est.visits.length, "inspection")} on file, newest first. Choose one to read it.</p>
+      <ul class="timeline">${est.visits.map((v) => `<li><button type="button" data-id="${v.id}" aria-pressed="false"><b>${S.date(v.date)}</b>${S.esc(v.visit)}<br>${S.esc(v.label)}</button></li>`).join("")}</ul>
+      <section id="visit" aria-live="polite"></section>
+      <p class="snapshot">An inspection shows what one inspector saw on one day. It is not a grade, and Sangamon County does not give pass or fail scores. For the official record, see the county portal.</p>`;
+    document.querySelectorAll(".timeline button").forEach((b) => (b.onclick = () => { showVisit(b.dataset.id, true); $("visitTitle").focus?.(); }));
+    $("copy").onclick = async () => {
+      try { await navigator.clipboard.writeText(summaryText()); $("copyMsg").textContent = "Summary copied."; }
+      catch (e) { $("copyMsg").textContent = "Copy did not work in this browser. Select the text and copy it instead."; }
+    };
+    showVisit(params.get("visit") || latest.id, false);
+  }
+  document.addEventListener("sfi:refresh", () => load(true));
+  load();
+})();
+</script>
+</body>
+</html>

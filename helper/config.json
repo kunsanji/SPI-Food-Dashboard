@@ -1,0 +1,21 @@
+{
+  "county": "sangamon",
+  "counties": {
+    "sangamon": {
+      "label": "Sangamon County",
+      "agency": "Sangamon County Department of Public Health",
+      "agency_short": "SCDPH",
+      "cdp_code": "sJRNEgWYzzs%3d",
+      "complaint_url": "https://co.sangamon.il.us/departments/m-z/public-health/environmental-health/food-sanitation",
+      "backfill_start": "2010-01-01",
+      "backfill_before_start": true
+    }
+  },
+  "portal_base": "https://public.cdpehs.com/ILEnvPbl/ESTABLISHMENT/",
+  "user_agent": "IDPH Food Protection Program public inspection viewer (contact: jackey-test)",
+  "delay_seconds": [1.0, 2.0],
+  "recent_days": 14,
+  "page_size": 500,
+  "time_budget_minutes": 330,
+  "store_inspector_names": false
+}
