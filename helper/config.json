@@ -12,7 +12,7 @@
     }
   },
   "portal_base": "https://public.cdpehs.com/ILEnvPbl/ESTABLISHMENT/",
-  "user_agent": "IDPH Food Protection Program public inspection viewer (contact: CHANGE-ME@illinois.gov)",
+  "user_agent": "IDPH Food Protection Program public inspection viewer (contact: kunsanjia246@gmail.com)",
   "delay_seconds": [1.0, 2.0],
   "recent_days": 14,
   "page_size": 500,
