@@ -1,0 +1,27 @@
+{
+ "county": "sangamon",
+ "county_label": "Sangamon County",
+ "agency": "Sangamon County Department of Public Health",
+ "source_url": "https://public.cdpehs.com/ILEnvPbl/ESTABLISHMENT/ShowESTABLISHMENTTablePage.aspx?ESTTST_CTY=sJRNEgWYzzs%3d",
+ "complaint_url": "https://co.sangamon.il.us/departments/m-z/public-health/environmental-health/food-sanitation",
+ "last_run": "2026-11-20T15:15:53+00:00",
+ "last_run_status": "ok",
+ "last_run_seconds": 10,
+ "last_run_requests": 3,
+ "last_run_added": 0,
+ "last_run_updated": 0,
+ "last_run_unchanged": 31,
+ "last_run_detail_pages": 0,
+ "errors": [],
+ "backfill_complete": false,
+ "backfill_done_through": null,
+ "total_inspections": 170,
+ "total_violations": 329,
+ "total_establishments": 141,
+ "newest_inspection_date": "2026-11-19",
+ "oldest_inspection_date": "2026-05-01",
+ "inspections_by_year": {
+  "2026": 170
+ },
+ "practice_week": "2026-W47"
+}
