@@ -8,12 +8,16 @@
       "cdp_code": "sJRNEgWYzzs%3d",
       "complaint_url": "https://sangamonil.gov/departments/m-r/public-health/food-service",
       "backfill_start": "2010-01-01",
-      "backfill_before_start": true
+      "backfill_before_start": true,
+      "form_change_date": "2019-01-01"
     }
   },
   "portal_base": "https://public.cdpehs.com/ILEnvPbl/ESTABLISHMENT/",
   "user_agent": "IDPH Food Protection Program public inspection viewer (contact: kunsanjia246@gmail.com)",
-  "delay_seconds": [1.0, 2.0],
+  "delay_seconds": [
+    1.0,
+    2.0
+  ],
   "recent_days": 14,
   "page_size": 500,
   "time_budget_minutes": 330,

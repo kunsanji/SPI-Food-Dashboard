@@ -29,7 +29,16 @@ MODULES = {
 }
 
 
+FORM_CHANGE = "2019-01-01"
+
+
+def is_older(r):
+    return r["date"] < FORM_CHANGE
+
+
 def label(r):
+    if is_older(r):
+        return "Older report form"
     risk, rep, grp = r.get("risk"), r.get("repeat"), r.get("grp")
     if risk is None or rep is None or grp is None:
         return "Not available"
@@ -53,13 +62,20 @@ def dump(path, obj):
 
 
 def build(store, county):
+    global FORM_CHANGE
+    FORM_CHANGE = county.get("form_change_date", FORM_CHANGE)
     rows = sorted(store.insp.values(), key=lambda r: (r["date"], int(r["id"])), reverse=True)
     for r in rows:
         r["label"] = label(r)
+        r["older"] = is_older(r)
+        if r["older"]:
+            r["n"] = len(store.viol.get(r["id"], [])) if r.get("details_checked") else None
+        else:
+            r["n"] = (r["risk"] or 0) + (r["grp"] or 0)
 
     # index + recent: place details stored once, visits point at them by position
     place_cols = ["est_no", "name", "address", "city", "zip", "est_type"]
-    visit_cols = ["id", "date", "visit", "risk", "repeat", "grp", "label"]
+    visit_cols = ["id", "date", "visit", "risk", "repeat", "grp", "label", "older", "n"]
 
     def pack(sub):
         pos, places, out = {}, [], []
@@ -98,7 +114,8 @@ def build(store, county):
                 "id": v["id"], "date": v["date"], "visit": v["visit"], "type_raw": v["type_raw"],
                 "risk": v["risk"], "repeat": v["repeat"], "grp": v["grp"], "label": v["label"],
                 "detail_url": v.get("detail_url"),
-                "fetched": bool(v.get("violations_fetched")),
+                "older": v["older"],
+                "fetched": bool(v.get("details_checked")) if v["older"] else bool(v.get("violations_fetched")),
                 "findings": [
                     {k: f.get(k) for k in ("item", "title", "repeat", "comment", "citation", "citation_text")}
                     for f in store.viol.get(v["id"], [])
@@ -113,7 +130,9 @@ def build(store, county):
 
     # items exactly as the portal prints them (to check the plain-language table against)
     seen = {}
-    for vs in store.viol.values():
+    for iid, vs in store.viol.items():
+        if iid in store.insp and is_older(store.insp[iid]):
+            continue
         for v in vs:
             if v.get("item") is not None:
                 t = seen.setdefault(str(v["item"]), {})
@@ -124,6 +143,8 @@ def build(store, county):
     examples = {}
     for mod, items in MODULES.items():
         for r in rows:
+            if r["older"]:
+                break
             hit = None
             for f in store.viol.get(r["id"], []):
                 c = (f.get("comment") or "").strip()
@@ -174,7 +195,7 @@ def build(store, county):
     # last 12 months of findings by form item, for the Learn page
     newest = rows[0]["date"] if rows else dt.date.today().isoformat()
     yr = (dt.date.fromisoformat(newest) - dt.timedelta(days=365)).isoformat()
-    recent_rows = [r for r in rows if r["date"] > yr]
+    recent_rows = [r for r in rows if r["date"] > yr and not r["older"]]
     by_item, insp_with = {}, {}
     for r in recent_rows:
         items = set()

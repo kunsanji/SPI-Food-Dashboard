@@ -2,8 +2,9 @@ name: Update inspection data
 
 on:
   schedule:
-    # GitHub schedules run on UTC. 08:00 UTC is 2 AM Central in winter (3 AM in summer).
-    - cron: "0 8 * * *"
+    # GitHub schedules run on UTC. 08:17 UTC is about 2 AM Central in winter (3 AM in summer).
+    # An odd minute avoids the top-of-hour rush, when GitHub delays scheduled runs by hours.
+    - cron: "17 8 * * *"
   workflow_dispatch:
     inputs:
       mode:

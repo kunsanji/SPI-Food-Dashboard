@@ -35,6 +35,16 @@ LIST_URL = f"{BASE}ShowESTABLISHMENTTablePage.aspx?ESTTST_CTY={CODE}"
 DATA = os.path.join(ROOT, "data")
 P = "ctl00$PageContent$"
 REPEATER = P + "VW_PUBLIC_ESTINSPTableControlRepeater$"
+# Before this date the county used an older inspection form. On those reports the portal's
+# list page shows 0 risk factor and 0 upkeep items even when the report has findings,
+# so every older report's detail page is always read.
+FORM_CHANGE = COUNTY.get("form_change_date", "2019-01-01")
+
+
+def older_form(row):
+    return row["date"] < FORM_CHANGE
+
+
 CITATION_LINE_RE = re.compile(r"(?m)^[ \t]*(?:\d{1,2}-\d{3}\.\d{1,3}|\d{3}\.\d{2,5})(?:\([A-Za-z0-9]{1,4}\))*[ .]")
 CITATION_RE = re.compile(r"^\s*(\d{1,2}-\d{3}\.\d{1,3}(?:\([A-Za-z0-9]{1,4}\))*|\d{3}\.\d{2,5}(?:\([A-Za-z0-9]{1,4}\))*)")
 
@@ -316,7 +326,7 @@ class Store:
         if len(ids) != 1 or page_keys.get(k, 0) != 1:
             return None
         old = self.insp[ids[0]]
-        if not old.get("violations_fetched"):
+        if not old.get("violations_fetched") or not old.get("est_id"):
             return None
         if any(old.get(f) != row.get(f) for f in ("repeat", "risk", "grp", "est_type", "address")):
             return None
@@ -354,7 +364,10 @@ def scrape_window(portal, store, start, end, deadline, stats):
             if time.time() > deadline:
                 return False
             ctl = row.pop("row_ctl")
-            if store.known(row, page_keys):
+            known = store.known(row, page_keys)
+            if known:
+                if older_form(known) and not known.get("details_checked"):
+                    read_details(portal, store, known, stats)
                 stats["unchanged"] += 1
                 seen += 1
                 continue
@@ -362,17 +375,15 @@ def scrape_window(portal, store, start, end, deadline, stats):
             row.update(ids)
             row["detail_url"] = detail_url(row["est_id"], row["id"])
             has_findings = (row["risk"] or 0) + (row["grp"] or 0) + (row["repeat"] or 0) > 0
-            if store.needs_detail(row):
-                if has_findings:
-                    store.viol[row["id"]] = [
-                        dict(v, inspection_id=row["id"]) for v in portal.violations(row["est_id"], row["id"])
-                    ]
-                    stats["details"] += 1
+            prev = store.insp.get(row["id"])
+            if store.needs_detail(row) or (older_form(row) and not (prev or {}).get("details_checked")):
+                if has_findings or older_form(row):
+                    read_details(portal, store, row, stats)
                 else:
                     store.viol.pop(row["id"], None)
-                row["violations_fetched"] = True
-            else:
-                row["violations_fetched"] = True
+            elif prev and prev.get("details_checked"):
+                row["details_checked"] = True
+            row["violations_fetched"] = True
             if row["id"] not in store.insp:
                 stats["added"] += 1
             else:
@@ -391,6 +402,31 @@ def scrape_window(portal, store, start, end, deadline, stats):
     if seen != total:
         stats["errors"].append(f"{start}..{end}: portal said {total}, parsed {seen}")
     stats["windows"].append({"from": str(start), "to": str(end), "portal_total": total, "parsed": seen})
+    return True
+
+
+def read_details(portal, store, row, stats):
+    store.viol[row["id"]] = [dict(v, inspection_id=row["id"]) for v in portal.violations(row["est_id"], row["id"])]
+    if not store.viol[row["id"]]:
+        store.viol.pop(row["id"])
+    row["details_checked"] = True
+    row["violations_fetched"] = True
+    stats["details"] += 1
+
+
+def check_older_reports(portal, store, deadline, stats):
+    """Read the detail page of every stored older-form report not yet read. Returns False if out of time."""
+    todo = sorted((r for r in store.insp.values() if older_form(r) and not r.get("details_checked") and r.get("est_id")),
+                  key=lambda r: r["date"], reverse=True)
+    if todo:
+        print(f"reading {len(todo)} older-form reports", flush=True)
+    for i, r in enumerate(todo, 1):
+        if time.time() > deadline:
+            return False
+        read_details(portal, store, r, stats)
+        if i % 100 == 0:
+            store.flush()
+    store.flush()
     return True
 
 
@@ -424,6 +460,7 @@ def main():
         if args.rebuild_only:
             pass
         elif args.dfrom:
+            check_older_reports(portal, store, deadline, stats)
             a = dt.date.fromisoformat(args.dfrom)
             b = dt.date.fromisoformat(args.dto) if args.dto else today
             for ws, we in month_windows(a, b):
@@ -437,7 +474,10 @@ def main():
             if not scrape_window(portal, store, rs, today, deadline, stats):
                 status = "partial (time budget)"
             store.flush()
-            # 2. continue the backfill, newest month first
+            # 2. older-form reports already on file but never opened
+            if status == "ok" and not check_older_reports(portal, store, deadline, stats):
+                status = "partial (backfill continues next run)"
+            # 3. continue the backfill, newest month first
             if not args.recent_only and not store.state.get("backfill_complete") and status == "ok":
                 floor = dt.date.fromisoformat(COUNTY["backfill_start"])
                 done = store.state.get("backfill_done_through")

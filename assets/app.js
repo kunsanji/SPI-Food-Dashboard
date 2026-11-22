@@ -35,7 +35,7 @@
   };
   S.daysAgo = (iso) => Math.floor((Date.now() - new Date(iso.slice(0, 10) + "T12:00:00").getTime()) / 864e5);
 
-  S.labelClass = (l) => ({ "Needs attention": "attn", "Minor issues": "minor", "No issues written up": "none" }[l] || "na");
+  S.labelClass = (l) => ({ "Needs attention": "attn", "Minor issues": "minor", "No issues written up": "none", "Older report form": "old" }[l] || "na");
   S.labelHTML = (l) => `<span class="label ${S.labelClass(l)}">${S.esc(l || "Not available")}</span>`;
   S.n = (v) => (v === null || v === undefined ? "not available" : v);
   S.slug = (no) => String(no || "unknown").replace(/[^0-9A-Za-z-]/g, "_");

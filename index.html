@@ -50,7 +50,7 @@
     <section class="box">
       <h2>How to read this</h2>
       <p><b>Risk factor</b> findings (items 1 to 29 on the form) are the kinds of problems that can directly make people sick, like food kept at the wrong temperature. <b>Upkeep</b> findings (items 30 to 58) are about cleaning, repairs, good practice and required staff training.</p>
-      <p>Labels: <span class="label attn">Needs attention</span> means 3 or more risk factor findings, or a problem repeated from last time. <span class="label minor">Minor issues</span> means any other finding. <span class="label none">No issues written up</span> means the inspector recorded nothing.</p>
+      <p>Labels: <span class="label attn">Needs attention</span> means 3 or more risk factor findings, or a problem repeated from last time. <span class="label minor">Minor issues</span> means any other finding. <span class="label none">No issues written up</span> means the inspector recorded nothing. <span class="label old">Older report form</span> marks reports from before 2019, when the county used a different form (see <a href="about.html#older">why</a>).</p>
       <p>There is no pass or fail grade in Sangamon County. Each visit is a snapshot of one day. <a href="about.html">More about the data</a>.</p>
     </section>
     <section class="box">
@@ -107,7 +107,8 @@
     });
   }
   function rowHTML(r) {
-    const nums = r.risk === null ? "Counts not available" :
+    const nums = r.older ? (r.n === null || r.n === undefined ? "Findings not copied yet" : `${S.plural(r.n, "finding")} on the older report form`) :
+      r.risk === null ? "Counts not available" :
       `${S.plural(r.risk, "risk factor")}, ${S.plural(r.repeat, "repeat")}, ${S.plural(r.grp, "upkeep item")}`;
     return `<li><a class="row" href="${S.placeHref(r.est_no, r.id)}">
       <span class="date">${S.date(r.date)}</span>

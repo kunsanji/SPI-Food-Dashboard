@@ -33,7 +33,7 @@ GitHub Actions (nightly, 2 AM Central)          GitHub Pages (static site)
 
 ## Running an update
 
-- **Automatic:** every night at 08:00 UTC (2 AM Central in winter, 3 AM in summer). GitHub can delay scheduled runs at busy times.
+- **Automatic:** every night at 08:17 UTC (about 2 AM Central in winter, 3 AM in summer). GitHub can delay scheduled runs at busy times.
 - **By hand:** Actions → Update inspection data → Run workflow. Choose `recent-only` to skip the backfill.
 - **Refresh now** on the site just re-reads the JSON files. It never contacts the county and costs nothing.
 - **Run update now** appears when data is more than 24 hours old. It opens the workflow page; someone with write access presses Run workflow, and the page polls `meta.json` until the new data arrives.
@@ -64,6 +64,10 @@ Other counties on the same Custom Data Processing portal have their own code in 
 | `page_size` | Rows per portal page (500 works) |
 | `time_budget_minutes` | Stop and save before GitHub's 6 hour job limit |
 | `store_inspector_names` | `false` keeps inspector names out of the data files and site |
+
+## Older reports (before 2019)
+
+Before 2019 Sangamon County used an older inspection form with different item numbers. On those reports the portal's list page shows 0 risk factor and 0 upkeep items even when the report has findings, so the helper always opens their detail pages, and the site shows them as written (label "Older report form") instead of decoding them. The cutoff is `form_change_date` in `helper/config.json`.
 
 ## Labels
 

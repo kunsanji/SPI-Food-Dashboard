@@ -29,6 +29,12 @@
   let est = null, current = null;
 
   function visitSentence(v, withName) {
+    const who0 = withName ? est.name : "this place";
+    if (v.older) {
+      const base = `On ${S.date(v.date)}, an inspector made a ${v.visit.toLowerCase()} visit to ${who0}. This report uses the county's older inspection form (used before 2019)`;
+      if (!v.fetched) return base + ". Its findings have not been copied yet.";
+      return base + (v.findings.length ? `, and the inspector wrote up ${S.plural(v.findings.length, "finding")}.` : ", and the inspector wrote up no findings.");
+    }
     if (v.risk === null) return `On ${S.date(v.date)}, an inspector made a ${v.visit.toLowerCase()} visit. Finding counts are not available for this visit.`;
     const total = v.risk + v.grp;
     const who = withName ? est.name : "this place";
@@ -58,6 +64,18 @@
     </article>`;
   }
 
+  function olderHTML(f) {
+    return `<article class="finding older" aria-label="${S.esc(f.title)}">
+      <div class="num" aria-hidden="true">${f.item == null ? "&ndash;" : S.esc(f.item)}</div>
+      <div class="body">
+        <div class="chips"><span class="chip older">Older form${f.item == null ? "" : ", item " + S.esc(f.item)}</span>${f.repeat || f.mentions_repeat ? `<span class="chip rep">Repeat</span>` : ""}</div>
+        <p class="title">${S.esc(f.title)}</p>
+        ${f.comment ? `<p class="muted" style="margin:.2rem 0">What the inspector wrote:</p><div class="verbatim">${S.esc(f.comment)}</div>` : ""}
+        ${f.citation ? `<details><summary>Code rule ${S.esc(f.citation)}</summary><p class="cite">${S.esc(f.citation_text)}</p></details>` : ""}
+      </div>
+    </article>`;
+  }
+
   function showVisit(id, push) {
     const v = est.visits.find((x) => x.id === id) || est.visits[0];
     current = v;
@@ -68,6 +86,7 @@
     if (!v.fetched) body = `<p class="muted">The detailed findings for this visit have not been copied yet. <a href="${S.esc(v.detail_url)}">Open the official report</a>.</p>`;
     else if (!fs.length && (v.risk || v.grp)) body = `<p class="muted">The detailed findings are not available. <a href="${S.esc(v.detail_url)}">Open the official report</a>.</p>`;
     else if (!fs.length) body = `<p>The inspector wrote up no findings on this visit.</p>`;
+    else if (v.older) body = `<h3>Findings (${fs.length})</h3><p class="muted">This report uses the county's older inspection form, which numbered items differently, so findings are shown as the inspector wrote them instead of decoded.</p>${fs.map(olderHTML).join("")}`;
     else body = (risk.length ? `<h3>Risk factor findings (${risk.length})</h3><p class="muted">The kinds of problems that can directly make people sick.</p>${risk.map(findingHTML).join("")}` : "")
       + (up.length ? `<h3>Upkeep findings (${up.length})</h3><p class="muted">Cleaning, repairs, good practice and required training.</p>${up.map(findingHTML).join("")}` : "");
     $("visit").innerHTML = `
@@ -83,6 +102,7 @@
     const v = current;
     const lines = [`${est.name}, ${est.address}, ${est.city} ${est.zip}`, visitSentence(v, true), `Label: ${v.label}`];
     for (const f of [...v.findings].sort((a, b) => a.item - b.item)) {
+      if (v.older) { lines.push(`- ${f.title}${f.comment ? ": " + f.comment.replace(/\s+/g, " ").slice(0, 200) : ""}`); continue; }
       const it = itemInfo(f.item, f.title);
       lines.push(`- Item ${f.item} (${it.kind === "risk" ? "risk factor" : "upkeep"}${f.repeat ? ", repeat" : ""}): ${it.plain}`);
     }
@@ -103,7 +123,7 @@
       <section class="summary" aria-labelledby="latestTitle">
         <h2 id="latestTitle" style="margin-top:0">Latest visit ${S.labelHTML(latest.label)}</h2>
         <p>${S.esc(visitSentence(latest))}</p>
-        <p class="muted">This is a snapshot of one day. Problems found may have been fixed since${S.daysAgo(latest.date) > 30 ? `, and this visit was ${S.daysAgo(latest.date)} days ago` : ""}.</p>
+        <p class="muted">This is a snapshot of one day. Problems found may have been fixed since${S.daysAgo(latest.date) > 730 ? `, and this visit was over ${Math.floor(S.daysAgo(latest.date) / 365)} years ago` : S.daysAgo(latest.date) > 30 ? `, and this visit was ${S.daysAgo(latest.date)} days ago` : ""}.</p>
       </section>
       <div class="tools no-print">
         <button type="button" id="copy">Copy summary</button>
