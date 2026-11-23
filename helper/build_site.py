@@ -46,7 +46,7 @@ def label(r):
         return "Needs attention"
     if risk + grp > 0:
         return "Minor issues"
-    return "No issues written up"
+    return "No violations found"
 
 
 def slug(est_no):

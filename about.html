@@ -12,40 +12,41 @@
 <main id="main" class="wrap">
   <section class="hero">
     <h1>About the data</h1>
-    <p class="lede">Where these reports come from, how often they update, and what they can and can't tell you.</p>
+    
   </section>
 
-  <h2>Where it comes from</h2>
-  <p>The Sangamon County Department of Public Health (SCDPH) inspects restaurants, stores, schools, day cares and other food businesses in the county. It publishes every inspection on its <a href="https://public.cdpehs.com/ILEnvPbl/ESTABLISHMENT/ShowESTABLISHMENTTablePage.aspx?ESTTST_CTY=sJRNEgWYzzs%3d">public inspection portal</a>, run by Custom Data Processing. That portal is the official record. This site copies the same records and adds plain-language explanations; it does not change or add findings.</p>
+  <h2>Where the data comes from</h2>
+  <p>The Sangamon County Department of Public Health (SCDPH) inspects restaurants, grocery stores, schools, day cares and other places that serve food. It posts every inspection on its <a href="https://public.cdpehs.com/ILEnvPbl/ESTABLISHMENT/ShowESTABLISHMENTTablePage.aspx?ESTTST_CTY=sJRNEgWYzzs%3d">inspection website</a>, which is the official record. This site copies those results and adds explanations. We don't change, add or remove any violations.</p>
 
-  <h2 id="refresh">How it stays up to date</h2>
+  <h2 id="refresh">How often it updates</h2>
   <ul>
-    <li>Every night a small program visits the county portal, one page at a time, and copies inspections from the last 14 days (to catch reports entered late) plus anything new.</li>
-    <li>It saves them as data files that this site reads. You can download them: <a href="data/inspections.csv">inspections (CSV)</a>, <a href="data/violations.csv">findings (CSV)</a>, <a href="data/meta.json">update log (JSON)</a>.</li>
-    <li><b>Refresh now</b> reloads those files in your browser. It is free and does not contact the county.</li>
-    <li>If the last update is more than a day old, <b>Run update now</b> opens the update job on GitHub, where the site's maintainers can start it by hand. The page then checks every 30 seconds and reloads when new data arrives.</li>
+    <li>Every night, a program checks the county website and copies any new inspections. It also re-checks the last 14 days in case a report was entered late.</li>
+    <li>You can download the data: <a href="data/inspections.csv">inspections (CSV)</a>, <a href="data/violations.csv">violations (CSV)</a>, <a href="data/meta.json">update log (JSON)</a>.</li>
+    <li><b>Refresh now</b> reloads the latest copy in your browser.</li>
+    <li>If the data is more than a day old, you'll see <b>Run update now</b>. It opens the update on GitHub, where the people who run this site can start it. The page will refresh on its own when it's done.</li>
   </ul>
   <div id="runlog" class="note"><p>Loading the update log…</p></div>
 
   <h2>What the labels mean</h2>
-  <p><span class="label attn">Needs attention</span> 3 or more risk factor findings, or any repeat violation, on that visit.</p>
-  <p><span class="label minor">Minor issues</span> At least one finding, but fewer than 3 risk factor findings and no repeats.</p>
-  <p><span class="label none">No issues written up</span> The inspector recorded no findings.</p>
-  <p id="older"><span class="label old">Older report form</span> Before 2019, Sangamon County used an older inspection form with different item numbers and no split between risk factor and upkeep items. Those reports are shown as the inspector wrote them, with the number of findings, but no label and no plain-language decoding.</p>
-  <p>These labels were made for this site to help people scan the list. They are not county ratings. Visit types are shortened too: "Original" on the county report is shown as Routine, and "1st Re-Inspect" through "6th Re-Inspect" as Follow-up.</p>
+  <p>Sangamon County doesn't use labels or grades. We added these to make the list easier to scan.</p>
+  <p><span class="label attn">Needs attention</span> 3 or more risk factor violations, or any repeat violation.</p>
+  <p><span class="label minor">Minor issues</span> Some violations, but fewer than 3 risk factor violations and no repeats.</p>
+  <p><span class="label none">No violations found</span> The inspector didn't write up any violations.</p>
+  <p id="older"><span class="label old">Older report form</span> Before 2019, the county used a different inspection form with different numbers, and it didn't separate risk factors from upkeep. We show those violations the way the inspector wrote them, without a label or an explanation.</p>
+  <p>We also shorten the inspection types. The county's "Original" is shown as Routine, and "1st Re-Inspect" through "6th Re-Inspect" are shown as Follow-up.</p>
 
-  <h2>Limits</h2>
+  <h2>Things to keep in mind</h2>
   <ul>
-    <li><b>No scores.</b> Sangamon County does not grade or pass/fail food businesses, and neither does this site. There are no rankings here.</li>
-    <li><b>One visit is a snapshot.</b> It shows what one inspector saw on one day. Many problems are corrected during the visit or soon after.</li>
-    <li><b>Counts are not comparable across types of place.</b> Places with more complex food handling are inspected more often and have more items that can be checked.</li>
-    <li><b>The plain-language lines are general.</b> They explain what each form item covers, written by hand for this site. The inspector's own note, shown under each finding, says what was actually seen.</li>
-    <li><b>Inspector names</b> appear on the county portal but are not shown here.</li>
-    <li><b>Errors.</b> If something here does not match the county portal, the portal is right. Please tell us.</li>
+    <li>There are no grades, scores or rankings, from the county or from us.</li>
+    <li>An inspection shows what the inspector saw that day. Many problems are fixed while the inspector is there or soon after.</li>
+    <li>Places with more complicated food get inspected more often, so don't compare the number of violations between, say, a restaurant and a gas station.</li>
+    <li>The explanation for each violation is general. We wrote one for each line on the inspection form. The inspector's notes under it say what was actually seen.</li>
+    <li>Inspector names are on the county website, but we don't show them here.</li>
+    <li>If anything here doesn't match the county website, the county website is right. Please let us know.</li>
   </ul>
 
-  <h2>Report a problem with a food business</h2>
-  <p>Contact SCDPH at (217) 535-3145 or through the <a href="https://sangamonil.gov/departments/m-r/public-health/food-service">SCDPH food services page</a>, which has a complaint form.</p>
+  <h2>Report a problem with a restaurant or store</h2>
+  <p>Call SCDPH at (217) 535-3145, or use the complaint form on the <a href="https://sangamonil.gov/departments/m-r/public-health/food-service">SCDPH food services page</a>.</p>
 </main>
 <script src="assets/items.js"></script>
 <script src="assets/app.js"></script>
@@ -55,9 +56,9 @@
   async function log() {
     const m = S.meta, el = document.getElementById("runlog");
     if (!m) { el.innerHTML = "<p>The update log is not available.</p>"; return; }
-    el.innerHTML = `<p><b>Last update:</b> ${S.dateTime(m.last_run)}, status "${S.esc(m.last_run_status)}". ${(m.last_run_added || 0)} new and ${(m.last_run_updated || 0)} changed inspections.
-      On file: ${(m.total_inspections || 0).toLocaleString()} inspections of ${(m.total_establishments || 0).toLocaleString()} places, from ${S.date(m.oldest_inspection_date)} to ${S.date(m.newest_inspection_date)}.
-      ${m.backfill_complete ? "" : "Older history is still being copied and will fill in over the next few nights."}
+    el.innerHTML = `<p><b>Last update:</b> ${S.dateTime(m.last_run)}. ${(m.last_run_added || 0).toLocaleString()} new inspections added.${(m.last_run_status || "").startsWith("stopped") ? ` <span class="err">The last update didn't finish (${S.esc(m.last_run_status)}).</span>` : ""}
+      We have ${(m.total_inspections || 0).toLocaleString()} inspections of ${(m.total_establishments || 0).toLocaleString()} places, from ${S.date(m.oldest_inspection_date)} to ${S.date(m.newest_inspection_date)}.
+      ${m.backfill_complete ? "" : "Older inspections are still being copied and will fill in over the next few days."}
       ${m.errors && m.errors.length ? `<br><span class="err">Last run notes: ${m.errors.map(S.esc).join("; ")}</span>` : ""}</p>`;
   }
   await S.page("about.html");

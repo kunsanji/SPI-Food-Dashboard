@@ -35,7 +35,7 @@
   };
   S.daysAgo = (iso) => Math.floor((Date.now() - new Date(iso.slice(0, 10) + "T12:00:00").getTime()) / 864e5);
 
-  S.labelClass = (l) => ({ "Needs attention": "attn", "Minor issues": "minor", "No issues written up": "none", "Older report form": "old" }[l] || "na");
+  S.labelClass = (l) => ({ "Needs attention": "attn", "Minor issues": "minor", "No violations found": "none", "Older report form": "old" }[l] || "na");
   S.labelHTML = (l) => `<span class="label ${S.labelClass(l)}">${S.esc(l || "Not available")}</span>`;
   S.n = (v) => (v === null || v === undefined ? "not available" : v);
   S.slug = (no) => String(no || "unknown").replace(/[^0-9A-Za-z-]/g, "_");
@@ -54,32 +54,32 @@
     const links = [["index.html", "Look up a place"], ["learn.html", "Learn"], ["about.html", "About the data"]];
     return `<a class="skip" href="#main">Skip to content</a>
 <header class="top"><div class="wrap">
-  <a class="brand" href="index.html">Springfield Food Inspections<small>Sangamon County inspection reports, in plain words</small></a>
+  <a class="brand" href="index.html">Springfield Food Inspections<small>Sangamon County food inspection results</small></a>
   <nav aria-label="Main">${links.map(([h, t]) => `<a href="${h}"${h === active ? ' aria-current="page"' : ""}>${t}</a>`).join("")}</nav>
 </div></header>
-<div class="fresh" role="region" aria-label="Data freshness"><div class="wrap" id="fresh">Loading data status…</div></div>`;
+<div class="fresh" role="region" aria-label="Data freshness"><div class="wrap" id="fresh">Checking for updates…</div></div>`;
   }
 
   function footer() {
     return `<footer><div class="wrap">
-<p>Source: <a href="https://public.cdpehs.com/ILEnvPbl/ESTABLISHMENT/ShowESTABLISHMENTTablePage.aspx?ESTTST_CTY=sJRNEgWYzzs%3d">Sangamon County Department of Public Health (SCDPH) public inspection portal</a>. The county's records are the official source. This site copies them nightly and adds plain-language explanations.</p>
-<p>One inspection is a snapshot of one day. Problems found may have been fixed since.</p>
-<p>A learning project of the Illinois Department of Public Health Food Protection Program. <a href="about.html">How this site works</a>.</p>
+<p>Inspection results come from the <a href="https://public.cdpehs.com/ILEnvPbl/ESTABLISHMENT/ShowESTABLISHMENTTablePage.aspx?ESTTST_CTY=sJRNEgWYzzs%3d">Sangamon County Department of Public Health (SCDPH) inspection website</a>, which is the official record. We copy them every night and add explanations.</p>
+<p>Results show conditions at the time of the inspection. Problems may have been corrected since.</p>
+<p>A student learning project with the Illinois Department of Public Health Food Protection Program. <a href="about.html">About this site</a></p>
 </div></footer>`;
   }
 
   S.renderFresh = function () {
     const el = document.getElementById("fresh");
     const m = S.meta;
-    if (!m) { el.innerHTML = `<span class="err">Data status is not available right now.</span>`; return; }
+    if (!m) { el.innerHTML = `<span class="err">Couldn't check when the data was last updated.</span>`; return; }
     const ageH = (Date.now() - new Date(m.last_run).getTime()) / 36e5;
     const stale = ageH > 24;
     const r = repo();
     const runUrl = r ? `https://github.com/${r}/actions/workflows/update.yml` : "about.html#refresh";
     el.innerHTML = `
-      <span>Updated <strong>${S.dateTime(m.last_run)}</strong>${stale ? ' <span class="stale">(more than a day ago)</span>' : ""}</span>
-      <span>${(m.total_inspections || 0).toLocaleString()} inspections on file</span>
-      <span>Newest: ${S.date(m.newest_inspection_date)}</span>
+      <span>Updated <strong>${S.dateTime(m.last_run)}</strong>${stale ? ' <span class="stale">(over a day ago)</span>' : ""}</span>
+      <span>${(m.total_inspections || 0).toLocaleString()} inspections</span>
+      <span>Latest inspection: ${S.date(m.newest_inspection_date)}</span>
       <span class="actions">
         <button type="button" id="refreshBtn">Refresh now</button>
         ${stale ? `<a class="btn primary" id="runBtn" href="${runUrl}" target="_blank" rel="noopener">Run update now</a>` : ""}
@@ -105,7 +105,7 @@
     await S.loadMeta(true);
     document.dispatchEvent(new CustomEvent("sfi:refresh"));
     const msg = document.getElementById("freshMsg");
-    if (msg) msg.textContent = S.meta && S.meta.last_run !== before ? "New data loaded." : "Already showing the latest data.";
+    if (msg) msg.textContent = S.meta && S.meta.last_run !== before ? "Updated." : "You're already seeing the latest data.";
   };
 
   // After someone starts the workflow on GitHub, check meta.json every 30 s for up to 40 min.
@@ -113,7 +113,7 @@
     const el = document.getElementById("fresh");
     const note = document.createElement("span");
     note.setAttribute("aria-live", "polite");
-    note.textContent = "Waiting for the update to finish. This page will refresh itself.";
+    note.textContent = "Update started. This page will refresh when it's done.";
     el.appendChild(note);
     let tries = 0;
     const t = setInterval(async () => {
@@ -123,7 +123,7 @@
         const m = await S.getJSON("data/meta.json", true);
         if (m.last_run !== since) { clearInterval(t); S.meta = m; S.renderFresh(); document.dispatchEvent(new CustomEvent("sfi:refresh")); }
       } catch (e) { /* keep waiting */ }
-      if (tries > 80) { clearInterval(t); note.textContent = "Still waiting. Check the update on GitHub, then press Refresh now."; }
+      if (tries > 80) { clearInterval(t); note.textContent = "This is taking a while. Check the update on GitHub, then press Refresh now."; }
     }, 30000);
   };
 

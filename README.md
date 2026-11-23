@@ -73,7 +73,7 @@ Before 2019 Sangamon County used an older inspection form with different item nu
 
 - **Needs attention:** 3 or more risk factor findings (items 1 to 29), or any repeat violation.
 - **Minor issues:** any other finding.
-- **No issues written up:** no findings recorded.
+- **No violations found:** no findings recorded.
 
 These are this site's labels, not county ratings.
 
