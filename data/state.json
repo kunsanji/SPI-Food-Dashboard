@@ -1,6 +1,6 @@
 {
- "backfill_done_through": "2010-09-01",
- "backfill_complete": false,
+ "backfill_done_through": "2010-01-01",
+ "backfill_complete": true,
  "practice": {
   "week": "2026-W48",
   "id": "817954"
