@@ -51,7 +51,7 @@
 
   // ---------- page chrome ----------
   function header(active) {
-    const links = [["index.html", "Look up a place"], ["learn.html", "Learn"], ["about.html", "About the data"]];
+    const links = [["index.html", "Look up a place"], ["trends.html", "Trends"], ["learn.html", "Learn"], ["about.html", "About the data"]];
     return `<a class="skip" href="#main">Skip to content</a>
 <header class="top"><div class="wrap">
   <a class="brand" href="index.html">Springfield Food Inspections<small>Sangamon County food inspection results</small></a>

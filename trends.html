@@ -1,0 +1,373 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Trends | Springfield Food Inspections</title>
+<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono&family=Public+Sans:wght@400;600;700;800&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="assets/style.css">
+<style>
+  .viz { --risk: #d9622b; --upkeep: #2a78d6; --muted-mark: #c9d1da; --grid: #e3e7ec; --axis: #b9c2cc; --tick: #5b6773; }
+  .filterbar { display: flex; flex-wrap: wrap; gap: .8rem 1.2rem; align-items: end; background: var(--sheet); border: 1px solid var(--rule); border-radius: 8px; padding: .8rem 1rem; margin: 1rem 0 1.2rem; position: sticky; top: 0; z-index: 3; }
+  .filterbar label { display: block; font-weight: 600; font-size: .9rem; }
+  .filterbar select { font: 400 1rem var(--sans); padding: .45rem; border: 1px solid var(--ink-2); border-radius: 6px; background: #fff; min-height: 44px; min-width: 12rem; }
+  .tiles { display: grid; grid-template-columns: repeat(auto-fit, minmax(11rem, 1fr)); gap: .8rem; margin-bottom: 1.2rem; }
+  .tile { background: var(--sheet); border: 1px solid var(--rule); border-radius: 8px; padding: .8rem 1rem; }
+  .tile .v { display: block; font-size: 1.7rem; font-weight: 700; line-height: 1.15; }
+  .tile .v.word { font-size: 1.15rem; padding-top: .35rem; }
+  .tile .l { color: var(--ink-2); font-size: .9rem; }
+  .card { background: var(--sheet); border: 1px solid var(--rule); border-radius: 8px; padding: 1rem 1.1rem 1.1rem; margin: 0 0 1.2rem; }
+  .card h2 { margin: 0 0 .2rem; font-size: 1.2rem; }
+  .card .sub { color: var(--ink-2); margin: 0 0 .7rem; font-size: .95rem; }
+  .plot { position: relative; width: 100%; }
+  .plot svg { display: block; width: 100%; height: auto; overflow: visible; }
+  .plot text { font: 400 12px var(--sans); fill: var(--tick); font-variant-numeric: tabular-nums; }
+  .plot .lab { fill: var(--ink); font-weight: 700; }
+  .hit { fill: transparent; cursor: default; }
+  .hit:focus { outline: none; }
+  .hit:focus-visible + .mark, .mark.on { opacity: .75; }
+  .legend { display: flex; flex-wrap: wrap; gap: .3rem 1rem; font-size: .9rem; color: var(--ink-2); margin: 0 0 .5rem; }
+  .legend i { display: inline-block; width: 12px; height: 12px; border-radius: 3px; vertical-align: -1px; margin-right: .35rem; }
+  .hbars { display: grid; gap: .55rem; }
+  .hrow { display: grid; grid-template-columns: minmax(8rem, 15rem) 1fr 3.6rem; gap: .2rem .7rem; align-items: center; font-size: .95rem; }
+  .hrow .nm { line-height: 1.25; }
+  .hrow .track { height: 14px; position: relative; }
+  .hrow .bar { position: absolute; left: 0; top: 0; bottom: 0; border-radius: 0 4px 4px 0; max-width: 100%; min-width: 2px; }
+  .hrow .val { text-align: right; font-variant-numeric: tabular-nums; font-weight: 600; }
+  .hrow:focus-visible { outline: 3px solid var(--focus); outline-offset: 3px; border-radius: 4px; }
+  @media (max-width: 560px) { .hrow { grid-template-columns: 1fr 3.2rem; } .hrow .nm { grid-column: 1 / -1; } }
+  .multiples { display: grid; grid-template-columns: repeat(auto-fit, minmax(15rem, 1fr)); gap: 1rem 1.4rem; }
+  .multiples h3 { font-size: .98rem; margin: 0 0 .2rem; min-height: 2.5em; }
+  @media (max-width: 700px) { .filterbar { position: static; } .multiples h3 { min-height: 0; } }
+  .tip { position: fixed; pointer-events: none; background: var(--ink); color: #fff; padding: .45rem .6rem; border-radius: 6px; font-size: .88rem; line-height: 1.35; z-index: 10; max-width: 16rem; display: none; }
+  .tip b { font-size: 1rem; }
+  details.tbl summary { font-size: .92rem; margin-top: .6rem; }
+  details.tbl table { margin-top: .5rem; font-size: .9rem; }
+  details.tbl td:not(:first-child), details.tbl th:not(:first-child) { text-align: right; font-variant-numeric: tabular-nums; }
+  .busy { opacity: .5; transition: opacity .15s; }
+</style>
+</head>
+<body>
+<main id="main" class="wrap viz">
+  <section class="hero">
+    <h1>Trends</h1>
+    <p class="lede">The bigger picture: how often violations come up in Sangamon County inspections, which ones are most common, and how that changes over time and by type of place.</p>
+    <p class="muted">These charts use inspections from 2019 on, when the county started using the current inspection form. Percentages are out of <b>routine inspections</b> (the regular, unannounced visits), since follow-ups and complaint visits go to places already expected to have problems.</p>
+  </section>
+
+  <div class="filterbar" role="group" aria-label="Filters for every chart on this page">
+    <div><label for="period">Time period</label>
+      <select id="period">
+        <option value="12">Last 12 months</option>
+        <option value="36">Last 3 years</option>
+        <option value="all" selected>Since 2019</option>
+      </select></div>
+    <div><label for="group">Type of place</label><select id="group"><option value="">All places</option></select></div>
+    <p class="muted" id="scope" aria-live="polite" style="margin:0"></p>
+  </div>
+
+  <div class="tiles" id="tiles"></div>
+
+  <section class="card" aria-labelledby="t1">
+    <h2 id="t1">How often inspectors find a risk factor violation</h2>
+    <p class="sub">Percent of routine inspections with at least one risk factor violation (items 1 to 29, the ones most likely to make people sick).</p>
+    <div class="plot" id="c1"></div>
+    <details class="tbl"><summary>Show as a table</summary><div id="c1t"></div></details>
+  </section>
+
+  <section class="card" aria-labelledby="t2">
+    <h2 id="t2">Most common violations</h2>
+    <p class="sub">Percent of routine inspections where each violation was found.</p>
+    <div class="legend"><span><i style="background:var(--risk)"></i>Risk factor</span><span><i style="background:var(--upkeep)"></i>Upkeep</span></div>
+    <div class="hbars" id="c2"></div>
+    <details class="tbl"><summary>Show as a table</summary><div id="c2t"></div></details>
+  </section>
+
+  <section class="card" aria-labelledby="t3">
+    <h2 id="t3">The five CDC risk factors over time</h2>
+    <p class="sub">Percent of routine inspections with at least one violation in each group. All five use the same scale.</p>
+    <div class="multiples" id="c3"></div>
+    <details class="tbl"><summary>Show as a table</summary><div id="c3t"></div></details>
+  </section>
+
+  <section class="card" aria-labelledby="t4">
+    <h2 id="t4">Food temperature problems by month of the year</h2>
+    <p class="sub">Percent of routine inspections with a holding temperature violation (cooling, hot holding, cold holding, date marking or time control), all years in the period combined.</p>
+    <div class="plot" id="c4"></div>
+    <details class="tbl"><summary>Show as a table</summary><div id="c4t"></div></details>
+  </section>
+
+  <section class="card" aria-labelledby="t5">
+    <h2 id="t5">By type of place</h2>
+    <p class="sub">Percent of routine inspections with at least one risk factor violation. Places with more complicated food handling have more things that can go wrong, so this isn't a ranking of how safe they are.</p>
+    <div class="hbars" id="c5"></div>
+    <details class="tbl"><summary>Show as a table</summary><div id="c5t"></div></details>
+  </section>
+
+  <section class="card" aria-labelledby="t6">
+    <h2 id="t6">Number of inspections</h2>
+    <p class="sub">All inspections, including follow-ups, complaints and spot checks.</p>
+    <div class="plot" id="c6"></div>
+    <details class="tbl"><summary>Show as a table</summary><div id="c6t"></div></details>
+  </section>
+
+  <section class="box">
+    <h2 style="margin-top:0">Reading these charts</h2>
+    <ul>
+      <li>A violation is something an inspector saw and wrote down. Changes over time can come from changes in inspection practice, staffing or the form itself, not only from changes in how food is handled.</li>
+      <li>Points based on fewer than 10 routine inspections are left out because they swing too much to mean anything.</li>
+      <li>The most recent month is only partly finished.</li>
+      <li>Want the raw numbers? Download <a href="data/inspections.csv">inspections</a> and <a href="data/violations.csv">violations</a> as CSV.</li>
+    </ul>
+  </section>
+</main>
+<div class="tip" id="tip" role="status"></div>
+<script src="assets/items.js"></script>
+<script src="assets/app.js"></script>
+<script>
+(async function () {
+  const S = window.SFI;
+  await S.page("trends.html");
+  const $ = (id) => document.getElementById(id);
+  const MON = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
+  const FACTOR_NAMES = { holding: "Improper holding temperatures", cooking: "Inadequate cooking", equipment: "Contaminated equipment and cross contamination", source: "Food from unsafe sources", hygiene: "Poor personal hygiene" };
+  const MIN_N = 10;
+  let T;
+  try { T = await S.getJSON("data/site/trends.json", true); }
+  catch (e) { $("tiles").innerHTML = `<p class="err">The trend data didn't load. Try Refresh now.</p>`; return; }
+  T.groups.forEach((g, i) => { const o = document.createElement("option"); o.value = String(i); o.textContent = g; $("group").appendChild(o); });
+
+  const pct = (a, b) => (b >= MIN_N ? (100 * a) / b : null);
+  const fmtPct = (v) => (v === null ? "too few" : v === 0 ? "0%" : v < 10 ? v.toFixed(1) + "%" : Math.round(v) + "%");
+  const tip = $("tip");
+  function showTip(ev, html) {
+    tip.innerHTML = html; tip.style.display = "block";
+    let x, y;
+    if (ev.clientX !== undefined && ev.type.startsWith("pointer")) { x = ev.clientX; y = ev.clientY; }
+    else { const r = ev.target.getBoundingClientRect(); x = r.left + r.width / 2; y = r.top; }
+    const w = tip.offsetWidth, h = tip.offsetHeight;
+    tip.style.left = Math.min(window.innerWidth - w - 8, Math.max(8, x - w / 2)) + "px";
+    tip.style.top = Math.max(8, y - h - 12) + "px";
+  }
+  const hideTip = () => (tip.style.display = "none");
+
+  // ---------- slicing ----------
+  function slice() {
+    const per = $("period").value, grp = $("group").value;
+    const lastM = T.months.length - 1;
+    const firstM = per === "all" ? 0 : Math.max(0, lastM - (+per - 1));
+    const unit = per === "12" ? "month" : per === "36" ? "quarter" : "year";
+    const keyOf = (m) => { const [y, mo] = m.split("-").map(Number); return unit === "month" ? m : unit === "quarter" ? `${y} Q${Math.ceil(mo / 3)}` : String(y); };
+    const labelOf = (k) => { if (unit === "month") { const [y, mo] = k.split("-").map(Number); return `${MON[mo - 1]} ${y}`; } return k; };
+    const buckets = [];
+    for (let m = firstM; m <= lastM; m++) { const k = keyOf(T.months[m]); if (!buckets.includes(k)) buckets.push(k); }
+    const blank = () => ({ n: 0, rt: 0, rf: 0, f: [0, 0, 0, 0, 0], it: {} });
+    const byB = Object.fromEntries(buckets.map((k) => [k, blank()]));
+    const total = blank(), byGroup = T.groups.map(blank), byMonthOfYear = Array.from({ length: 12 }, blank);
+    for (const [m, g, n, rt, rf, f, it] of T.cells) {
+      if (m < firstM) continue;
+      const add = (o) => { o.n += n; o.rt += rt; o.rf += rf; f.forEach((v, i) => (o.f[i] += v)); for (const k in it) o.it[k] = (o.it[k] || 0) + it[k]; };
+      add(byGroup[g]);
+      if (grp !== "" && g !== +grp) continue;
+      add(total); add(byB[keyOf(T.months[m])]);
+      add(byMonthOfYear[+T.months[m].slice(5, 7) - 1]);
+    }
+    const partialLast = T.through && T.through.slice(0, 7) === T.months[lastM];
+    return { per, grp, unit, buckets, labelOf, byB, total, byGroup, byMonthOfYear, from: T.months[firstM], to: T.months[lastM], partialLast };
+  }
+
+  // ---------- generic SVG charts ----------
+  const NS = "http://www.w3.org/2000/svg";
+  const el = (name, attrs, parent) => { const e = document.createElementNS(NS, name); for (const k in attrs) e.setAttribute(k, attrs[k]); if (parent) parent.appendChild(e); return e; };
+  // clean axis: step from 1/2/2.5/5 x 10^k, at most 5 gridlines
+  function niceScale(v, pctMode) {
+    v = Math.max(pctMode ? 5 : 1, v);
+    const raw = v / 4, p = Math.pow(10, Math.floor(Math.log10(raw)));
+    const step = [1, 2, 2.5, 5, 10].map((m) => m * p).find((st) => st >= raw);
+    let max = Math.ceil(v / step) * step;
+    if (pctMode && max > 100) max = 100;
+    return { max, step };
+  }
+  const niceMax = (v, pctMode) => niceScale(v, pctMode).max;
+  function axisLabelsEvery(n, w) { return Math.max(1, Math.ceil(n / Math.max(2, Math.floor(w / 64)))); }
+
+  // line chart with crosshair; series values may be null (gaps)
+  function lineChart(host, labels, values, opts) {
+    host.innerHTML = "";
+    const W = Math.max(280, host.clientWidth), H = opts.h || 220, m = { t: 14, r: 14, b: 28, l: 38 };
+    const svg = el("svg", { viewBox: `0 0 ${W} ${H}`, role: "img", "aria-label": opts.aria }, host);
+    const iw = W - m.l - m.r, ih = H - m.t - m.b;
+    const sc = opts.max ? niceScale(opts.max, true) : niceScale(Math.max(1, ...values.filter((v) => v !== null)), true);
+    const max = sc.max;
+    const x = (i) => m.l + (labels.length === 1 ? iw / 2 : (i * iw) / (labels.length - 1));
+    const y = (v) => m.t + ih - (v / max) * ih;
+    for (let v = 0; v <= max + 1e-9; v += sc.step) {
+      el("line", { x1: m.l, x2: W - m.r, y1: y(v), y2: y(v), stroke: v === 0 ? "var(--axis)" : "var(--grid)", "stroke-width": 1 }, svg);
+      el("text", { x: m.l - 6, y: y(v) + 4, "text-anchor": "end" }, svg).textContent = (+v.toFixed(1)) + "%";
+    }
+    const every = axisLabelsEvery(labels.length, iw);
+    labels.forEach((l, i) => { if (i % every === 0 || i === labels.length - 1 && (labels.length - 1) % every > every / 2) el("text", { x: x(i), y: H - 8, "text-anchor": "middle" }, svg).textContent = opts.short ? opts.short(l) : l; });
+    let d = "", pen = false;
+    values.forEach((v, i) => { if (v === null) { pen = false; return; } d += `${pen ? "L" : "M"}${x(i).toFixed(1)},${y(v).toFixed(1)}`; pen = true; });
+    el("path", { d, fill: "none", stroke: opts.color, "stroke-width": 2, "stroke-linejoin": "round", "stroke-linecap": "round" }, svg);
+    values.forEach((v, i) => { if (v !== null && (values[i - 1] == null && values[i + 1] == null)) el("circle", { cx: x(i), cy: y(v), r: 4, fill: opts.color, stroke: "var(--sheet)", "stroke-width": 2 }, svg); });
+    // end label
+    const lastI = values.map((v, i) => (v === null ? -1 : i)).filter((i) => i >= 0).pop();
+    if (lastI !== undefined && !opts.noEnd) {
+      el("circle", { cx: x(lastI), cy: y(values[lastI]), r: 4, fill: opts.color, stroke: "var(--sheet)", "stroke-width": 2 }, svg);
+      const t = el("text", { x: x(lastI) - 6, y: y(values[lastI]) - 9, "text-anchor": "end", class: "lab" }, svg); t.textContent = fmtPct(values[lastI]);
+    }
+    // crosshair
+    const cross = el("line", { y1: m.t, y2: m.t + ih, stroke: "var(--axis)", "stroke-width": 1, visibility: "hidden" }, svg);
+    const dot = el("circle", { r: 4, fill: opts.color, stroke: "var(--sheet)", "stroke-width": 2, visibility: "hidden" }, svg);
+    const ov = el("rect", { x: m.l, y: m.t, width: iw, height: ih, class: "hit", tabindex: 0, "aria-label": opts.aria + ". Use left and right arrows to read values." }, svg);
+    let cur = labels.length - 1;
+    function show(i, ev) {
+      cur = i; const v = values[i];
+      cross.setAttribute("x1", x(i)); cross.setAttribute("x2", x(i)); cross.setAttribute("visibility", "visible");
+      if (v !== null) { dot.setAttribute("cx", x(i)); dot.setAttribute("cy", y(v)); dot.setAttribute("visibility", "visible"); } else dot.setAttribute("visibility", "hidden");
+      showTip(ev, `<b>${fmtPct(v)}</b><br>${S.esc(labels[i])}${opts.note ? "<br>" + opts.note(i) : ""}`);
+    }
+    ov.addEventListener("pointermove", (ev) => { const r = svg.getBoundingClientRect(); const px = ((ev.clientX - r.left) / r.width) * W; show(Math.max(0, Math.min(labels.length - 1, Math.round(((px - m.l) / iw) * (labels.length - 1)))), ev); });
+    ov.addEventListener("keydown", (ev) => { if (ev.key === "ArrowLeft") show(Math.max(0, cur - 1), ev); if (ev.key === "ArrowRight") show(Math.min(labels.length - 1, cur + 1), ev); });
+    ov.addEventListener("focus", (ev) => show(cur, ev));
+    const off = () => { cross.setAttribute("visibility", "hidden"); dot.setAttribute("visibility", "hidden"); hideTip(); };
+    ov.addEventListener("pointerleave", off); ov.addEventListener("blur", off);
+  }
+
+  // column chart, one series
+  function columnChart(host, labels, values, opts) {
+    host.innerHTML = "";
+    const W = Math.max(280, host.clientWidth), H = 220, m = { t: 22, r: 8, b: 28, l: 44 };
+    const svg = el("svg", { viewBox: `0 0 ${W} ${H}`, role: "img", "aria-label": opts.aria }, host);
+    const iw = W - m.l - m.r, ih = H - m.t - m.b;
+    const sc = niceScale(Math.max(1, ...values.filter((v) => v !== null)), opts.pct);
+    const max = sc.max;
+    const band = iw / labels.length, bw = Math.min(24, band - 2);
+    const y = (v) => m.t + ih - (v / max) * ih;
+    for (let v = 0; v <= max + 1e-9; v += sc.step) {
+      el("line", { x1: m.l, x2: W - m.r, y1: y(v), y2: y(v), stroke: v === 0 ? "var(--axis)" : "var(--grid)", "stroke-width": 1 }, svg);
+      el("text", { x: m.l - 6, y: y(v) + 4, "text-anchor": "end" }, svg).textContent = opts.pct ? (+v.toFixed(1)) + "%" : Math.round(v).toLocaleString();
+    }
+    const every = axisLabelsEvery(labels.length, iw);
+    const maxI = values.indexOf(Math.max(...values.filter((v) => v !== null)));
+    labels.forEach((l, i) => {
+      const cx = m.l + band * i + band / 2, v = values[i];
+      if (i % every === 0) el("text", { x: cx, y: H - 8, "text-anchor": "middle" }, svg).textContent = opts.short ? opts.short(l) : l;
+      if (v === null) return;
+      const h = Math.max(1, (v / max) * ih), r = Math.min(4, bw / 2, h);
+      const x0 = cx - bw / 2, y0 = m.t + ih - h;
+      el("path", { class: "mark", fill: opts.color, d: `M${x0},${m.t + ih}V${y0 + r}Q${x0},${y0} ${x0 + r},${y0}H${x0 + bw - r}Q${x0 + bw},${y0} ${x0 + bw},${y0 + r}V${m.t + ih}Z` }, svg);
+      if (i === maxI && opts.labelMax) el("text", { x: cx, y: y0 - 6, "text-anchor": "middle", class: "lab" }, svg).textContent = opts.fmt(v);
+    });
+    labels.forEach((l, i) => {
+      const hit = el("rect", { x: m.l + band * i, y: m.t, width: band, height: ih, class: "hit", tabindex: 0, "aria-label": `${l}: ${values[i] === null ? "too few inspections" : opts.fmt(values[i])}` }, svg);
+      const mark = () => svg.querySelectorAll(".mark")[values.slice(0, i).filter((v) => v !== null).length];
+      const on = (ev) => { svg.querySelectorAll(".mark.on").forEach((x) => x.classList.remove("on")); if (values[i] !== null) mark()?.classList.add("on"); showTip(ev, `<b>${values[i] === null ? "Too few inspections" : opts.fmt(values[i])}</b><br>${S.esc(l)}${opts.note ? "<br>" + opts.note(i) : ""}`); };
+      const off = () => { svg.querySelectorAll(".mark.on").forEach((x) => x.classList.remove("on")); hideTip(); };
+      hit.addEventListener("pointermove", on); hit.addEventListener("focus", on);
+      hit.addEventListener("pointerleave", off); hit.addEventListener("blur", off);
+    });
+  }
+
+  // horizontal bars in HTML
+  function hbars(host, rows, opts) {
+    host.innerHTML = "";
+    const max = opts.max ?? Math.max(1, ...rows.map((r) => r.v ?? 0));
+    for (const r of rows) {
+      const row = document.createElement("div"); row.className = "hrow"; row.tabIndex = 0;
+      row.setAttribute("aria-label", `${r.name}: ${r.v === null ? "too few inspections" : fmtPct(r.v)}${r.note ? ", " + r.note : ""}`);
+      const nm = document.createElement("span"); nm.className = "nm"; nm.textContent = r.name;
+      if (r.sub) { const sm = document.createElement("small"); sm.className = "muted"; sm.textContent = " " + r.sub; nm.appendChild(sm); }
+      const tr = document.createElement("span"); tr.className = "track";
+      const b = document.createElement("span"); b.className = "bar"; b.style.width = r.v === null ? "0" : (100 * r.v) / max + "%"; b.style.background = r.color; tr.appendChild(b);
+      const val = document.createElement("span"); val.className = "val"; val.textContent = fmtPct(r.v);
+      row.append(nm, tr, val);
+      const on = (ev) => showTip(ev, `<b>${fmtPct(r.v)}</b><br>${S.esc(r.name)}${r.note ? "<br>" + S.esc(r.note) : ""}`);
+      row.addEventListener("pointermove", on); row.addEventListener("focus", on);
+      row.addEventListener("pointerleave", hideTip); row.addEventListener("blur", hideTip);
+      host.appendChild(row);
+    }
+  }
+
+  function table(host, head, rows) {
+    const t = document.createElement("table");
+    const tr = t.createTHead().insertRow(); head.forEach((h) => { const th = document.createElement("th"); th.scope = "col"; th.textContent = h; tr.appendChild(th); });
+    const tb = t.createTBody(); rows.forEach((r) => { const row = tb.insertRow(); r.forEach((c) => (row.insertCell().textContent = c)); });
+    const wrap = document.createElement("div"); wrap.className = "tablewrap"; wrap.appendChild(t); host.innerHTML = ""; host.appendChild(wrap);
+  }
+
+  // ---------- render ----------
+  function render() {
+    const s = slice();
+    const B = s.buckets, lab = B.map(s.labelOf);
+    if (s.partialLast) lab[lab.length - 1] += " (so far)";
+    const short = (l) => l.replace(" (so far)", "").replace(/^(\w{3}) 20(\d\d)$/, "$1 '$2");
+    const groupName = s.grp === "" ? "all places" : T.groups[+s.grp].toLowerCase();
+    const ym = (k) => `${MON[+k.slice(5, 7) - 1]} ${k.slice(0, 4)}`;
+    $("scope").textContent = `Showing ${groupName}, ${ym(s.from)} to ${ym(s.to)}.`;
+
+    // tiles
+    const tot = s.total;
+    const topItem = Object.entries(tot.it).sort((a, b) => b[1] - a[1])[0];
+    $("tiles").innerHTML = "";
+    [[tot.n.toLocaleString(), "inspections"], [tot.rt.toLocaleString(), "routine inspections"],
+     [fmtPct(pct(tot.rf, tot.rt)), "of routine inspections had a risk factor violation"],
+     [topItem ? ITEMS[topItem[0]]?.short || "Item " + topItem[0] : "None", "most common violation"]].forEach(([v, l]) => {
+      const d = document.createElement("div"); d.className = "tile";
+      const a = document.createElement("span"); a.className = "v" + (/^[\d,.%]+$|^too few$/.test(v) ? "" : " word"); a.textContent = v;
+      const b = document.createElement("span"); b.className = "l"; b.textContent = l;
+      d.append(a, b); $("tiles").appendChild(d);
+    });
+
+    // 1. risk factor rate over time
+    const rate = B.map((k) => pct(s.byB[k].rf, s.byB[k].rt));
+    lineChart($("c1"), lab, rate, { color: "var(--risk)", short, aria: `Percent of routine inspections with a risk factor violation, by ${s.unit}`, note: (i) => `${s.byB[B[i]].rt.toLocaleString()} routine inspections` });
+    table($("c1t"), [s.unit[0].toUpperCase() + s.unit.slice(1), "Routine inspections", "With a risk factor violation", "Percent"], B.map((k, i) => [lab[i], s.byB[k].rt.toLocaleString(), s.byB[k].rf.toLocaleString(), fmtPct(rate[i])]));
+
+    // 2. top violations
+    const top = Object.entries(tot.it).sort((a, b) => b[1] - a[1]).slice(0, 10);
+    const rows2 = top.map(([item, c]) => ({ name: ITEMS[item]?.short || `Item ${item}`, sub: `(item ${item})`, v: pct(c, tot.rt), color: +item <= 29 ? "var(--risk)" : "var(--upkeep)", note: `${c.toLocaleString()} of ${tot.rt.toLocaleString()} routine inspections, ${+item <= 29 ? "risk factor" : "upkeep"}` }));
+    if (rows2.length) hbars($("c2"), rows2, {}); else $("c2").innerHTML = `<p class="muted">Not enough inspections to show.</p>`;
+    table($("c2t"), ["Violation", "Type", "Routine inspections", "Percent"], top.map(([item, c]) => [`${item}. ${ITEMS[item]?.short || ""}`, +item <= 29 ? "Risk factor" : "Upkeep", c.toLocaleString(), fmtPct(pct(c, tot.rt))]));
+
+    // 3. small multiples, shared scale
+    const fr = T.factors.map((f, j) => B.map((k) => pct(s.byB[k].f[j], s.byB[k].rt)));
+    const fmax = Math.max(1, ...fr.flat().filter((v) => v !== null));
+    $("c3").innerHTML = "";
+    const plots = T.factors.map((f) => {
+      const wrap = document.createElement("div"); const h = document.createElement("h3"); h.textContent = FACTOR_NAMES[f]; wrap.appendChild(h);
+      const p = document.createElement("div"); p.className = "plot"; wrap.appendChild(p); $("c3").appendChild(wrap); return p;
+    });
+    T.factors.forEach((f, j) => lineChart(plots[j], lab, fr[j], { color: "var(--risk)", max: fmax, h: 150, short, aria: `${FACTOR_NAMES[f]}: percent of routine inspections, by ${s.unit}` }));
+    table($("c3t"), [s.unit[0].toUpperCase() + s.unit.slice(1), ...T.factors.map((f) => FACTOR_NAMES[f])], B.map((k, i) => [lab[i], ...fr.map((r) => fmtPct(r[i]))]));
+
+    // 4. seasonality of holding temperature violations
+    const hi = T.factors.indexOf("holding");
+    const sea = s.byMonthOfYear.map((o) => pct(o.f[hi], o.rt));
+    columnChart($("c4"), MON, sea, { color: "var(--risk)", pct: true, fmt: fmtPct, labelMax: true, aria: "Percent of routine inspections with a holding temperature violation, by month of the year", note: (i) => `${s.byMonthOfYear[i].rt.toLocaleString()} routine inspections` });
+    table($("c4t"), ["Month", "Routine inspections", "With a holding temperature violation", "Percent"], MON.map((mn, i) => [mn, s.byMonthOfYear[i].rt.toLocaleString(), s.byMonthOfYear[i].f[hi].toLocaleString(), fmtPct(sea[i])]));
+
+    // 5. by type of place (selected type highlighted, others stay visible in a quieter color)
+    const rows5 = T.groups.map((g, i) => ({ g, i, o: s.byGroup[i] })).filter((r) => r.o.rt >= MIN_N)
+      .map((r) => ({ name: r.g, v: pct(r.o.rf, r.o.rt), color: s.grp === "" || +s.grp === r.i ? "var(--upkeep)" : "var(--muted-mark)", note: `${r.o.rt.toLocaleString()} routine inspections` }))
+      .sort((a, b) => b.v - a.v);
+    hbars($("c5"), rows5, { max: 100 });
+    table($("c5t"), ["Type of place", "Routine inspections", "With a risk factor violation", "Percent"], T.groups.map((g, i) => [g, s.byGroup[i].rt.toLocaleString(), s.byGroup[i].rf.toLocaleString(), fmtPct(pct(s.byGroup[i].rf, s.byGroup[i].rt))]));
+
+    // 6. number of inspections
+    const counts = B.map((k) => s.byB[k].n);
+    columnChart($("c6"), lab, counts, { color: "var(--upkeep)", fmt: (v) => v.toLocaleString() + " inspections", short, aria: `Number of inspections by ${s.unit}` });
+    table($("c6t"), [s.unit[0].toUpperCase() + s.unit.slice(1), "Inspections", "Routine inspections"], B.map((k, i) => [lab[i], s.byB[k].n.toLocaleString(), s.byB[k].rt.toLocaleString()]));
+  }
+
+  $("period").addEventListener("change", render);
+  $("group").addEventListener("change", render);
+  let rt; window.addEventListener("resize", () => { clearTimeout(rt); rt = setTimeout(render, 150); });
+  document.addEventListener("sfi:refresh", async () => { document.querySelector("main").classList.add("busy"); try { T = await S.getJSON("data/site/trends.json", true); } catch (e) {} document.querySelector("main").classList.remove("busy"); render(); });
+  render();
+})();
+</script>
+</body>
+</html>

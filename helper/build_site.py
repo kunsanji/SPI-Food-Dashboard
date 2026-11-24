@@ -214,6 +214,8 @@ def build(store, county):
         "findings_by_item": by_item, "inspections_with_item": insp_with, "labels": labels,
     })
 
+    build_trends(rows, store)
+
     # CSV copies
     icols = ["id", "date", "est_no", "est_id", "name", "address", "city", "state", "zip", "type_raw", "visit",
              "est_type", "repeat", "risk", "grp", "label", "detail_url"]
@@ -242,3 +244,57 @@ def build(store, county):
         "inspections_by_year": dict(sorted(years.items())),
         "practice_week": week,
     }
+
+
+# ---------- trends page ----------
+# Type groups for the Trends page. Cuisine-based county types (like "Pan-Asian") are folded into
+# Restaurant on purpose, so the charts never compare kinds of cuisine.
+TYPE_GROUPS = {
+    "Restaurant": ["Restaurant", "Pan-Asian", "Deli", "Bakery"],
+    "School": ["School"],
+    "Grocery or convenience store": ["Retail Food Store", "Convenient Store"],
+    "Bar or tavern": ["Bar", "Tavern"],
+    "Nursing home or hospital": ["Nursing Home", "Hospital"],
+    "Day care": ["Daycare"],
+    "Mobile, concession or catering": ["Mobile Unit", "Concession Stand", "Catering"],
+}
+CDC_FACTORS = {"holding": range(20, 25), "cooking": range(18, 20), "equipment": range(15, 18),
+               "source": range(11, 15), "hygiene": range(3, 11)}
+
+
+def type_group(t):
+    for g, members in TYPE_GROUPS.items():
+        if t in members:
+            return g
+    return "Other"
+
+
+def build_trends(rows, store):
+    """Monthly counts by type group, current form only (2019 on). Rates use routine inspections."""
+    groups = list(TYPE_GROUPS) + ["Other"]
+    cells = {}
+    for r in rows:
+        if r["older"]:
+            continue
+        key = (r["date"][:7], groups.index(type_group(r["est_type"])))
+        c = cells.setdefault(key, {"n": 0, "rt": 0, "rf": 0, "f": [0] * 5, "it": {}})
+        c["n"] += 1
+        if not r["visit"].startswith("Routine"):
+            continue
+        c["rt"] += 1
+        items = {f["item"] for f in store.viol.get(r["id"], []) if f.get("item")}
+        if any(i <= 29 for i in items) or (r.get("risk") or 0) > 0:
+            c["rf"] += 1
+        for k, (name, rng) in enumerate(CDC_FACTORS.items()):
+            if any(i in rng for i in items):
+                c["f"][k] += 1
+        for i in items:
+            c["it"][str(i)] = c["it"].get(str(i), 0) + 1
+    months = sorted({k[0] for k in cells})
+    out = [[months.index(m), g, c["n"], c["rt"], c["rf"], c["f"], c["it"]] for (m, g), c in sorted(cells.items())]
+    dump(os.path.join(SITE, "trends.json"), {
+        "months": months, "groups": groups, "factors": list(CDC_FACTORS),
+        "cols": ["month", "group", "inspections", "routine", "routine_with_risk_factor", "routine_with_factor", "routine_with_item"],
+        "cells": out,
+        "through": rows[0]["date"] if rows else None,
+    })

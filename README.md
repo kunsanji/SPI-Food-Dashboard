@@ -4,6 +4,7 @@ A public website that makes Sangamon County food inspection reports easy to find
 
 - **Look up a place:** search every inspection on file by name, street or ZIP.
 - **Report decoder:** each finding in plain words, why it matters for getting sick, and whether it is a risk factor or upkeep item.
+- **Trends:** charts of risk factor rates over time, the most common violations, the five CDC risk factors, seasonality of temperature problems, and rates by type of place (2019 on, filterable by period and type).
 - **Learn:** the five CDC risk factors with local counts, five course modules, a weekly practice report, and how Illinois food handler training works.
 - **Classroom kit:** lesson plan, printable worksheet, and slides that update themselves.
 
@@ -18,7 +19,7 @@ GitHub Actions (nightly, 2 AM Central)          GitHub Pages (static site)
 ```
 
 - `helper/scrape.py` searches the county portal one month (or the last 14 days) at a time, posts each row's **Details** button to learn its inspection id, then downloads the violation page once. Rows already on file are matched without extra requests, so nightly runs take a few minutes.
-- `helper/build_site.py` writes small files for the site: `data/site/recent.json` (first paint), `data/site/index.json` (full history search), one file per place in `data/site/est/`, weekly practice report, examples and 12-month stats.
+- `helper/build_site.py` writes small files for the site: `data/site/recent.json` (first paint), `data/site/index.json` (full history search), one file per place in `data/site/est/`, monthly aggregates for the Trends page (`data/site/trends.json`), weekly practice report, examples and 12-month stats.
 - `data/inspections.json`, `data/violations.json` and the CSV copies hold everything. `data/meta.json` logs each run. `data/state.json` tracks backfill progress.
 - The site is plain HTML, CSS and JavaScript. No build step, no server, no login.
 
