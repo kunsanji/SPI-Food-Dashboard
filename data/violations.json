@@ -1,5 +1,85 @@
 [
  {
+  "item": 55,
+  "title": "Physical facilities installed, maintained, and cleaned.",
+  "repeat": false,
+  "mentions_repeat": false,
+  "comment": "",
+  "citation": "6-101.11(A)(1)",
+  "citation_text": "6-101.11(A)(1) Surface Characteristics. (A) Materials for indoor floor, wall, and ceiling surfaces under conditions of normal use shall be: (1) SMOOTH, durable, and EASILY CLEANABLE for areas where FOOD ESTABLISHMENT operations are conducted.\n\nThe wall surface above the hand sink in the bonus room was observed with damaged paint that exposed the absorbent drywall beneath. The PIC was shown and instructed to re-seal prior to the next routine inspection. Ensure that all surfaces near moisture and food service activities are maintained smooth and easily cleanable at all times.",
+  "inspection_id": "829884"
+ },
+ {
+  "item": 1,
+  "title": "Charge present, demonstrates knowledge, and performs duties.",
+  "repeat": false,
+  "mentions_repeat": false,
+  "comment": "Store failed to provide critical items of soap and sanitizer despite having both items available on the retail side of the store. In the future food service should be stopped when these items are out of stock. When asked about the shipment of supplies containing the soap and sanitizer it was stated the delivery would be at the end of the week. There are resources available to obtain both soap and sanitizer from the retail portion of the store and adjacent businesses. Operating without soap and sanitizer is an unacceptable practice. An easy solution of purchase should have immediately been executed to remedy the problem. In the future, halt food service operations until soap and sanitizer are available. Hand washing is the most important part of food service (especially during Norovirus season). Wash hands before handling food. Ensure utensils and food contact surfaces are being regularly sanitized. A nine day follow up was scheduled to accommodate CK schedule.",
+  "citation": "",
+  "citation_text": "",
+  "inspection_id": "829779"
+ },
+ {
+  "item": 10,
+  "title": "Adequate handwashing sinks properly supplied and accessible.",
+  "repeat": false,
+  "mentions_repeat": false,
+  "comment": "Inspectors observed there to be no soap at the handwashing sink upon arrival. Discussed with PIC and they stated it has been ordered and should arrive by the end of the week. A container of hand sanitizer was emptied and rinsed out. The hand sanitizer container was filled with handwashing soap to supply the handwashing sink. The violation was CORRECTED on site.",
+  "citation": "6-301.11",
+  "citation_text": "6-301.11 Handwashing Cleanser, Availability. Each HANDWASHING SINK or group of 2 adjacent HANDWASHING SINKS shall be provided with a supply of hand cleaning liquid, powder, or bar soap.[P]",
+  "inspection_id": "829779"
+ },
+ {
+  "item": 16,
+  "title": "Food-contact surfaces; cleaned and sanitized.",
+  "repeat": false,
+  "mentions_repeat": false,
+  "comment": "Inspectors observed there to be no chemical sanitizer solution in use through out the facility. There was bleach in the facility to CORRECT the violation. Ensure that sanitizer is in use during food preparation and service to sanitizer counter tops and food contact surfaces.",
+  "citation": "4-501.114(A)",
+  "citation_text": "4-501.114(A) Manual and Mechanical Warewashing Equipment, Chemical Sanitization - Temperature, pH, Concentration, and Hardness. A chemical SANITIZER used in a SANITIZING solution for a manual or mechanical operation at contact times specified under 4-703.11(C) shall meet the criteria specified under §7-204.11 Sanitizers, Criteria, shall be used in accordance with the EPA-registered label use instructions, and shall be used as follows: (A) A chlorine solution shall have a minimum temperature based on the concentration and PH of the solution as listed in the chart in 4-501.114 (A). [P]",
+  "inspection_id": "829779"
+ },
+ {
+  "item": 47,
+  "title": "Food and non-food contact surfaces cleanable, properly designed, constructed, and used.",
+  "repeat": false,
+  "mentions_repeat": false,
+  "comment": "The shelf in the cabinet below the cappuccino machine was observed to be broken. The items stored on this shelf have fallen. PIC mentioned putting in a work order to get this shelf repaired. Ensure that equipment is maintained in good repair.",
+  "citation": "4-501.11(A)",
+  "citation_text": "4-501.11(A) Good Repair and Proper Adjustment. (A) EQUIPMENT shall be maintained in a state of repair and condition that meets the requirements specified under Parts 4-1 and 4-2. [C]",
+  "inspection_id": "829779"
+ },
+ {
+  "item": 48,
+  "title": "Warewashing facilities: installed, maintained, and used; test strips.",
+  "repeat": false,
+  "mentions_repeat": false,
+  "comment": "Inspectors observed Purell spray for store use on the coffee service counter. The facility was unable to provide test strips to confirm the chemical concentration of the sanitizer. Ensure that the facility has the ability to test the chemical concentrations of all sanitizer solutions in use throughout the facility. Manager is no longer going to be using the chemical for food contact sanitizing. And so no test strips will be needed. Cease purchasing the product once this bottle is used. OR provide a proper test strip and continue use of the product as the intended food contact sanitizer. The test strips for this particular product are fairly expensive and SCDPH does not typically see this product in-use due to the cost of the test strips.",
+  "citation": "4-302.14",
+  "citation_text": "4-302.14 Sanitizing Solutions, Testing Devices. A test kit or other device that accurately measures the concentration in MG/L of SANITIZING solutions shall be provided. [Pf]",
+  "inspection_id": "829779"
+ },
+ {
+  "item": 48,
+  "title": "Warewashing facilities: installed, maintained, and used; test strips.",
+  "repeat": false,
+  "mentions_repeat": false,
+  "comment": "",
+  "citation": "4-303.11(A)",
+  "citation_text": "4-303.11(A) The sani-bucket available on the service line was filled with water as no sanitizer was available in-store. During the inspection, bleach was found on the store shelves and pulled to create a proper sani-bucket. Test strips were provided by SCDPH to properly test bleach concentration. Stressed importance of sanitizing with manager and staff. See that a sani-bucket is always available on the service line whenever food is being served. \n\n\n\nCleaning Agents and Sanitizers, Availability. (A) Cleaning agents that are used to clean EQUIPMENT and UTENSILS as specified under Part 4-6, shall be provided and available for use during all hours of operation.",
+  "inspection_id": "829779"
+ },
+ {
+  "item": 55,
+  "title": "Physical facilities installed, maintained, and cleaned.",
+  "repeat": false,
+  "mentions_repeat": false,
+  "comment": "Inspectors observed clutter of food containers and packaging materials on the floor of the walk in cooler. Soil accumulation was observed in the corner near the handwashing sink. Ensure that all surfaces are cleaned and maintained to be smooth and easily cleanable.",
+  "citation": "6-501.12",
+  "citation_text": "6-501.12 Cleaning, Frequency and Restrictions. (A) PHYSICAL FACILITIES shall be cleaned as often as necessary to keep them clean. (B) Except for cleaning that is necessary due to a spill or other accident, cleaning shall be done during periods when the least amount of FOOD is exposed such as after closing. [C]",
+  "inspection_id": "829779"
+ },
+ {
   "item": 51,
   "title": "Plumbing installed; proper backflow devices.",
   "repeat": false,
