@@ -1,5 +1,55 @@
 [
  {
+  "item": 3,
+  "title": "Management, food employee and conditional employee; knowledge, responsibilities and reporting.",
+  "repeat": false,
+  "mentions_repeat": false,
+  "comment": "The PIC was unable to provide the inspectors with signed employee health reporting agreements. After looking through the handbook we were unable to verify that the employees have acknowledged the reporting agreements. Copies of the employee health reporting agreements and the lists of diagnosis and symptoms that require exclusion from food service were provided to the PIC.",
+  "citation": "2-103.11(P)",
+  "citation_text": "2-103.11(P) Person In Charge. The PERSON IN CHARGE shall ensure that: (P) FOOD EMPLOYEES and CONDITIONAL EMPLOYEES are informed in a verifiable manner of their responsibility to report in accordance with LAW, to the PERSON IN CHARGE, information about their health and activities as they relate to diseases that are transmissible through FOOD, as specified under 2-201.11(A). [Pf]",
+  "inspection_id": "829894"
+ },
+ {
+  "item": 5,
+  "title": "Procedures for responding to vomiting and diarrheal events.",
+  "repeat": false,
+  "mentions_repeat": false,
+  "comment": "Inspectors observed there to be no Norovirus clean-up procedure available in the facility. The facility only had low splash bleach. Discussed with PIC and she stated she will get regular bleach for them to use. A copy of the Norovirus clean-up procedure was provided.",
+  "citation": "2-501.11",
+  "citation_text": "2-501.11 Clean-up of Vomiting and Diarrheal Events. A FOOD ESTABLISHMENT shall have written procedures for EMPLOYEES to follow when responding to vomiting or diarrheal events that involve the discharge of vomitus or fecal matter onto surfaces in the FOOD ESTABLISHMENT. The procedures shall address the specific actions EMPLOYEES must take to minimize the spread of contamination and the exposure of EMPLOYEES, consumers, FOOD, and surfaces to vomitus or fecal matter. [Pf]",
+  "inspection_id": "829894"
+ },
+ {
+  "item": 22,
+  "title": "Proper cold holding temperatures.",
+  "repeat": false,
+  "mentions_repeat": false,
+  "comment": "Inspectors observed a container of jalapeños and a container of pickles to be stored on the counter. The packaging of both items state they must be refrigerated after opening. This was brought to the attention of the PIC and she stated they usually keep these items refrigerated. The PIC voluntarily discarded the jar of jalapeños and the jar of pickles. Ensure that all items that require refrigeration are kept at or below 41 degrees Fahrenheit.",
+  "citation": "3-501.16(A)(2)",
+  "citation_text": "3-501.16(A)(2) Time/Temperature Control for Safety Food, Hot and Cold Holding. (A) Except during preparation, cooking, or cooling, or when time is used as the public health control as specified under §3-501.19, and except as specified under (B) and in (C) of this section, TIME/TEMPERATURE CONTROL FOR SAFETY FOOD shall be maintained:(2) At 5°C (41°F) or less. [P]",
+  "inspection_id": "829894"
+ },
+ {
+  "item": 28,
+  "title": "Toxic substances properly identified, stored and used.",
+  "repeat": false,
+  "mentions_repeat": false,
+  "comment": "Inspectors observed glass cleaner to be stored above food items on a metal shelving unit. The food items included flour, chips, and candy. Ensure that cleaning supplies and other chemicals are stored separate from food items to avoid contamination.",
+  "citation": "7-201.11",
+  "citation_text": "7-201.11 Separation. Poisonous or toxic materials shall be stored so they can not contaminate food, equipment, utensils, linens, and single-service and single-use articles by: (A) Separating the POISONOUS OR TOXIC MATERIALS by spacing or partitioning; and (B) Locating the POISONOUS OR TOXIC MATERIALS in an area that is not above FOOD, EQUIPMENT, UTENSILS, LINENS, and SINGLE-SERVICE or SINGLE-USE ARTICLES. [P]",
+  "inspection_id": "829894"
+ },
+ {
+  "item": 56,
+  "title": "Adequate ventilation and lighting; designated areas used.",
+  "repeat": false,
+  "mentions_repeat": false,
+  "comment": "Inspectors observed personal items stored intermixed with items intended for consumers in the walk in cooler. To avoid contamination of products for the consumer inspectors suggested a bin or crate to be used to contain personal items to keep them separate from merchandise. Preferred storage of this bin is on the bottom shelf.",
+  "citation": "6-403.11(B)",
+  "citation_text": "6-403.11(B) Designated Areas. (B) Lockers or other suitable facilities shall be located in a designated room or area where contamination of FOOD, EQUIPMENT, UTENSILS, LINENS, and SINGLESERVICE and SINGLE-USE ARTICLES can not occur. [C]",
+  "inspection_id": "829894"
+ },
+ {
   "item": 55,
   "title": "Physical facilities installed, maintained, and cleaned.",
   "repeat": false,

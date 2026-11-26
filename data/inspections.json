@@ -1,5 +1,25 @@
 [
  {
+  "date": "2026-11-25",
+  "est_no": "167-35560",
+  "name": "Jiffi Stop #590",
+  "address": "3062 Stevenson Drive",
+  "city": "Springfield",
+  "state": "IL",
+  "zip": "62703",
+  "type_raw": "Original",
+  "visit": "Routine",
+  "est_type": "Convenient Store",
+  "repeat": 0,
+  "risk": 4,
+  "grp": 1,
+  "est_id": "40365",
+  "id": "829894",
+  "detail_url": "https://public.cdpehs.com/ILEnvPbl/ESTABLISHMENT/ShowViolationTablePage.aspx?ESTABLISHMENT=40365&ESTTST_CTY=sJRNEgWYzzs%3d&VIOLATION_INSPECTION=829894&INSPECTION_NN=829894",
+  "details_checked": true,
+  "violations_fetched": true
+ },
+ {
   "date": "2026-11-24",
   "est_no": "167-31414",
   "name": "Caritas Hall",
